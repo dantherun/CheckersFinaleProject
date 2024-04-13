@@ -28,9 +28,11 @@ public class CheckersBoard extends Application {
     private SplitPane splitPane;
     private Tile[][] board;
     private ArrayList<Text> texts;
+    private ArrayList<Button> buttons;
     private Group tileGroup;
     private Group pieceGroup;
     private Group textGroup;
+    private Group buttonGroup;
     private double mouseX;
     private double mouseY;
     private int[] cordinations;
@@ -44,9 +46,11 @@ public class CheckersBoard extends Application {
     public CheckersBoard(){
         board = new Tile[WIDTH][HEIGHT];
         texts = new ArrayList<>();
+        buttons = new ArrayList<>();
         tileGroup = new Group();
         pieceGroup = new Group();
         textGroup = new Group();
+        buttonGroup = new Group();
         cordinations = new int[2];
         takeInput = false;
         timers = new Timeline[10];
@@ -67,7 +71,7 @@ public class CheckersBoard extends Application {
         rectangle2.setStroke(Color.BLACK);
         rectangle2.setStrokeWidth(2);
 
-        root.getChildren().addAll(tileGroup, pieceGroup, rectangle1, rectangle2, textGroup);
+        root.getChildren().addAll(tileGroup, pieceGroup, rectangle1, rectangle2, textGroup, buttonGroup);
         return root;
     }
 
@@ -129,6 +133,10 @@ public class CheckersBoard extends Application {
         return (int)(pixel / TILE_SIZE);
     }
 
+    public void changePieceColor(PieceType type, int col, int row, String color){
+        board[col][row].getPiece().setColor(color);
+    }
+
     public void addPiece(PieceType type, int col, int row){
         ViewPiece viewPiece = makePiece(type, col, row);
         board[col][row].setPiece(viewPiece);
@@ -140,8 +148,22 @@ public class CheckersBoard extends Application {
         pieceGroup.getChildren().clear();
     }
 
+    private ViewPiece makePiece(PieceType type, int x, int y, String color){
+        ViewPiece viewPiece = new ViewPiece(type, x, y, color);
+        viewPiece.setOnMouseClicked(e -> {
+            mouseX = e.getSceneX();
+            mouseY = e.getSceneY();
+            //System.out.println("x: " + toBoard(mouseX));
+            //.out.println("Y: " + toBoard(mouseY));
+            cordinations[0] = toBoard(mouseX);
+            cordinations[1] = toBoard(mouseY);
+            takeInput = false;
+            view.takeInput(toBoard(mouseX), toBoard(mouseY));
+        });
+        return viewPiece;
+    }
     private ViewPiece makePiece(PieceType type, int x, int y){
-        ViewPiece viewPiece = new ViewPiece(type, x, y);
+        ViewPiece viewPiece = new ViewPiece(type, x, y, (type == PieceType.WHITEPIECE || type == PieceType.WHITEKING) ? "#fff9f4" : "#c40003");
         viewPiece.setOnMouseClicked(e -> {
             mouseX = e.getSceneX();
             mouseY = e.getSceneY();
@@ -192,9 +214,7 @@ public class CheckersBoard extends Application {
         view = new View(this);
     }
 
-    public static void main(String[] args) {
-        launch();
-    }
+
 
     public void message(String message, int x, int y, boolean bold, int textId) {
 //        Text text = new Text("Right Border Text");
@@ -394,8 +414,38 @@ public class CheckersBoard extends Application {
 //        alert.showAndWait();
     }
 
+    public void addButton(String message, int x, int y){
+        Button button = new Button(message);
+
+        button.setFont(new Font(40));
+        button.setLayoutX(x);
+        button.setLayoutY(y);
+
+        button.setOnAction(event -> {
+            view.buttonPushed(message);
+        });
+
+
+        HBox buttonBox = new HBox(10);
+        buttonBox.setAlignment(Pos.CENTER);
+        buttonBox.getChildren().add(button);
+
+        VBox root = new VBox(10);
+        root.setSpacing(40);
+        root.setAlignment(Pos.CENTER);
+        root.getChildren().add(buttonBox);
+
+        buttons.add(button);
+        buttonGroup.getChildren().add(button);
+
+    }
+
     public void quit(){
         primaryStage.close();
+    }
+
+    public static void main(String[] args) {
+        launch();
     }
 
 }

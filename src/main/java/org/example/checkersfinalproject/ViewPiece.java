@@ -12,6 +12,8 @@ import java.io.FileNotFoundException;
 import static org.example.checkersfinalproject.CheckersBoard.TILE_SIZE;
 public class ViewPiece extends StackPane {
     private PieceType type;
+    private String color;
+    private Ellipse ellipse;
     private double mouseX, mouseY;
     private double oldX, oldY;
     public PieceType getType() {
@@ -25,13 +27,13 @@ public class ViewPiece extends StackPane {
         return oldX;
     }
 
-    public ViewPiece(PieceType type, int x, int y){
+    public ViewPiece(PieceType type, int x, int y, String color){
         this.type = type;
-
+        this.color = color;
         move(x, y);
 
 
-        Ellipse ellipse = new Ellipse(TILE_SIZE * 0.3125, TILE_SIZE * 0.26);
+        ellipse = new Ellipse(TILE_SIZE * 0.3125, TILE_SIZE * 0.26);
 
         ellipse.setTranslateX((TILE_SIZE - TILE_SIZE * 0.3125 * 2) / 2);
         ellipse.setTranslateY((TILE_SIZE - TILE_SIZE * 0.26 * 2) / 2);
@@ -51,19 +53,19 @@ public class ViewPiece extends StackPane {
 
             ellipse.setStroke(Color.BLACK);
             ellipse.setStrokeWidth(TILE_SIZE * 0.03);
+            ellipse.setFill(Color.valueOf(color));
 
-            if(type == PieceType.WHITEPIECE){
-                ellipse.setFill(Color.valueOf("#fff9f4"));
-                getChildren().addAll(bg, ellipse);
-            }
+//            if(type == PieceType.WHITEPIECE){
+//                ellipse.setFill(Color.valueOf("#fff9f4"));
+//                getChildren().addAll(bg, ellipse);
+//            }
+//
+//            else if(type == PieceType.REDPIECE){
+//                ellipse.setFill(Color.valueOf("#c40003"));
+//                getChildren().addAll(bg, ellipse);
+//            }
 
-            else if(type == PieceType.REDPIECE){
-                ellipse.setFill(Color.valueOf("#c40003"));
-                getChildren().addAll(bg, ellipse);
-            }
-
-            else if(type == PieceType.WHITEKING){
-                ellipse.setFill(Color.valueOf("#fff9f4"));
+            if(type == PieceType.WHITEKING || type == PieceType.REDKING){
                 ImageView imageView = createImageView("D:\\YG\\CheckersFinalProject-master\\src\\main\\java\\org\\example\\checkersfinalproject\\crown.png", 50, 50);
                 imageView.setTranslateX((TILE_SIZE - TILE_SIZE * 0.3125 * 2) / 2);
                 imageView.setTranslateY((TILE_SIZE - TILE_SIZE * 0.3125 * 2) / 2);
@@ -71,12 +73,16 @@ public class ViewPiece extends StackPane {
             }
 
             else{
-                ellipse.setFill(Color.valueOf("#c40003"));
-                ImageView imageView = createImageView("D:\\YG\\CheckersFinalProject-master\\src\\main\\java\\org\\example\\checkersfinalproject\\crown.png", 50, 50);
-                imageView.setTranslateX((TILE_SIZE - TILE_SIZE * 0.3125 * 2) / 2);
-                imageView.setTranslateY((TILE_SIZE - TILE_SIZE * 0.3125 * 2) / 2);
-                getChildren().addAll(bg, ellipse, imageView);
+                getChildren().addAll(bg, ellipse);
             }
+
+//            else{
+//                ellipse.setFill(Color.valueOf("#c40003"));
+//                ImageView imageView = createImageView("D:\\YG\\CheckersFinalProject-master\\src\\main\\java\\org\\example\\checkersfinalproject\\crown.png", 50, 50);
+//                imageView.setTranslateX((TILE_SIZE - TILE_SIZE * 0.3125 * 2) / 2);
+//                imageView.setTranslateY((TILE_SIZE - TILE_SIZE * 0.3125 * 2) / 2);
+//                getChildren().addAll(bg, ellipse, imageView);
+//            }
         }
 
 
@@ -119,6 +125,11 @@ public class ViewPiece extends StackPane {
         oldY = y * TILE_SIZE;
 
         relocate(oldX, oldY);
+    }
+
+    public void setColor(String color){
+        ellipse.setFill(Color.valueOf(color));
+        //ellipse.setFill(Color.BLACK);
     }
 
     public void abortMove(){

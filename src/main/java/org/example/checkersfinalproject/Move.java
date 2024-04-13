@@ -5,10 +5,20 @@ public class Move {
     private int[] pieceFromCord;
     private int[] pieceToCord;
 
-    public Move(int evaluation, int[] pieceFromCord, int[] pieceToCord){
+    private boolean becomesAKing;
+
+    public Move(int evaluation, int[] pieceFromCord){
+        this.evaluation = evaluation;
+        this.pieceFromCord = pieceFromCord;
+        this.pieceToCord = null;
+        this.becomesAKing = false;
+    }
+
+    public Move(int evaluation, int[] pieceFromCord, int[] pieceToCord, boolean becomesAKing){
         this.evaluation = evaluation;
         this.pieceFromCord = pieceFromCord;
         this.pieceToCord = pieceToCord;
+        this.becomesAKing = becomesAKing;
     }
 
     public int getEvaluation() {
@@ -23,7 +33,21 @@ public class Move {
         return pieceToCord;
     }
 
+    public void setEvaluation(int evaluation) {
+        this.evaluation = evaluation;
+    }
+
+    public void addEvaluation(int evaluation){
+        this.evaluation += evaluation;
+    }
+
+    public void subtructEvaluation(int evaluation){
+        this.evaluation -= evaluation;
+    }
     public Move clone(){
-        return new Move(evaluation, pieceFromCord, pieceToCord);
+        return new Move(evaluation, pieceFromCord, pieceToCord, becomesAKing);
+    }
+    public boolean becomesAKing(){
+        return becomesAKing;
     }
 }

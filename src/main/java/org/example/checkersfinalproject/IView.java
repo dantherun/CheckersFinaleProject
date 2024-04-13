@@ -16,5 +16,7 @@ public interface IView {
     //public void message(String message, int x, int y, boolean bold, int timerId, boolean alert);
 
     public void askTwoAnswers(String message, String asn1, String ans2, String restart, boolean alert);
+    public void addButton(String message, int x, int y);
+    public void changePieceColor(PieceType type, int row, int col, String color);
     public void quit();
 }

@@ -15,6 +15,14 @@ public class BitBoard {
         initialize();
     }
 
+    public BitBoard(BitBoard another) {
+        this.whitePieces = another.whitePieces;
+        this.redPieces = another.redPieces;
+        this.whiteKings = another.whiteKings;
+        this.redKings = another.redKings;
+        this.shadows = another.shadows;
+    }
+
     public void initialize(){
         long mask = 1;
         whitePieces = 0;
@@ -534,14 +542,6 @@ public class BitBoard {
 //    }
 
     public BitBoard clone(){
-        BitBoard newBoard;
-        try{
-            newBoard = (BitBoard) super.clone();
-        }
-
-        catch (Exception e){
-            newBoard = null;
-        }
 
 //        BitBoard newBoard = new BitBoard();
 //        newBoard.whitePieces = this.whitePieces;
@@ -551,6 +551,6 @@ public class BitBoard {
 //        newBoard.shadows = this.shadows;
         //newBoard.mask = this.mask;
 
-        return newBoard;
+        return new BitBoard(this);
     }
 }

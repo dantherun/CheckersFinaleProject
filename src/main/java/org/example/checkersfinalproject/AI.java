@@ -37,9 +37,9 @@ public class AI {
         boolean hasToEat;
         Model newModel = model.clone();
         Set<Move> moves = new HashSet<>();
-        Set<int[]> eatings;
+        HashMap<int[], String> possibleMoves;
         int evaluation = 0;
-
+        Move bestMove;
         HashMap<String, long[]> eatingPathPointer;
         hasToEat = newModel.canEat(pieceType);
         Piece kingType = new King(pieceType.getDifferentType());
@@ -47,44 +47,83 @@ public class AI {
         long kings = board.getPieces(kingType.getPieceType());
         int[] leftestPiece;
 
-
         while ((leftestPiece = board.getFirstPiece(pieces))[0] != -1) {
-            newModel.getEatings(pieceType, leftestPiece[0], leftestPiece[1], 0, 0);
-            if (!(eatings = newModel.getAllMoves(pieceType, leftestPiece[0], leftestPiece[1], hasToEat, true)).isEmpty()) {
-                for (int[] cord : eatings) {
-                    moves.add(new Move(1, leftestPiece, cord));
+            newModel.getEatings(pieceType, leftestPiece[0], leftestPiece[1], 0, 0, 0);
+            if (!(possibleMoves = newModel.getAllMoves(pieceType, leftestPiece[0], leftestPiece[1], hasToEat, true)).isEmpty()) {
+                for (Map.Entry<int[], String> move : possibleMoves.entrySet()) {
+                    evaluation = Integer.parseInt(move.getValue().split(",")[0]);
+                    moves.add(new Move(evaluation, leftestPiece, move.getKey(), Boolean.parseBoolean(move.getValue().split(",")[1])));
                 }
             }
 
             pieces = board.removeFirstPiece(pieces);
+            evaluation = 0;
         }
 
         while ((leftestPiece = board.getFirstPiece(kings))[0] != -1) {
-            if (!(eatings = newModel.getAllMoves(kingType, leftestPiece[0], leftestPiece[1], hasToEat, true)).isEmpty()) {
-                for (int[] cord : eatings) {
-                    moves.add(new Move(1, leftestPiece, cord));
+            if (!(possibleMoves = newModel.getAllMoves(kingType, leftestPiece[0], leftestPiece[1], hasToEat, true)).isEmpty()) {
+                for (Map.Entry<int[], String> move : possibleMoves.entrySet()) {
+                    evaluation = Integer.parseInt(move.getValue().split(",")[0]);
+                    moves.add(new Move(evaluation, leftestPiece, move.getKey(), Boolean.parseBoolean(move.getValue().split(",")[1])));
                 }
+
+//                for (int[] cord : possibleMoves) {
+//                    moves.add(new Move(evaluation, leftestPiece, cord));
+//                }
             }
             //players.removeFirstPiece(piece);
             kings = board.removeFirstPiece(kings);
-
+            evaluation = 0;
         }
 
 
-        if(hasToEat){
-            int maxEatings = 0;
-            int currentEatings = 0;
-            for (Move move : moves){
-                //currentEatings = countEatings(move);
-            }
+        int maxEatings = 0;
+        int currentEatings = 0;
+        for (Move move : moves){
+            Model evalModel = newModel.clone();
+            evalModel.makeMove(pieceType, move.getPieceFromCord()[0], move.getPieceFromCord()[1]);
+            evaluate(pieceType, move, evalModel);
+            int a = 1;
+            a++;
+            //currentEatings = countEatings(move);
         }
-            for (Move move : moves){
-                return move;
-            }
-        return null;
+
+
+
+        bestMove = new Move(Integer.MIN_VALUE, null);
+        for (Move move : moves){
+            if(move.getEvaluation() > bestMove.getEvaluation())
+                bestMove = move;
+        }
+
+        return bestMove;
     }
 
-    //public
+    public void evaluate(Piece pieceType, Move move, Model model){
+        Piece newPiece = pieceType;
+        model.getEatingPathPointer().clear();
+
+        // check if will be a king
+        if(move.becomesAKing())
+            move.addEvaluation(2);
+
+//        // check if will be a king
+//        if((pieceType.getPieceType() == PieceType.WHITEPIECE && move.getPieceToCord()[0] == 0) ||
+//                (pieceType.getPieceType() == PieceType.REDPIECE && move.getPieceToCord()[0] == 7)){
+//            newPiece = new King(pieceType.getDifferentType());
+//            move.addEvaluation(2);
+//        }
+
+//        // check if still can continue to eat
+//        model.getEatings(pieceType, move.getPieceFromCord()[0], move.getPieceFromCord()[1], 0, 0, 0);
+//        if(!model.getEatingPathPointer().isEmpty()){
+//            for(String cords : model.getEatingPathPointer().keySet()){
+//                model.makeMove(pieceType, Integer.parseInt(cords.split(",")[0]), Integer.parseInt(cords.split(",")[1]));
+//                evaluate(pieceType, move, model.clone());
+//            }
+//        }
+
+    }
 
 //    public int countEatings(Move move){
 //

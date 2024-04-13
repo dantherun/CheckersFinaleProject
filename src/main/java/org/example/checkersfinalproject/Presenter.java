@@ -1,5 +1,6 @@
 package org.example.checkersfinalproject;
 
+import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Objects;
 import java.util.Set;
@@ -17,8 +18,12 @@ public class Presenter {
     private int[] cordinations;
     private int[] timeRemained;
     private Piece lastChosenPiece;
-    private Set<int[]> moves;
+    private HashMap<int[], String> moves;
     private GameMode gameMode;
+    private Piece playerPieceType;
+    private King playerKingType;
+    private PieceType hasPiece;
+    private Move aiMove;
     public Presenter(IView view){
         timeRemained = new int[2];
         this.view = view;
@@ -26,7 +31,7 @@ public class Presenter {
         player = 0;
         String moveDirection = "";
         lastChosenPiece = null;
-        moves = new HashSet<>();
+        moves = new HashMap<>();
         hasToEat = false;
         game();
     }
@@ -50,10 +55,8 @@ public class Presenter {
     }
 
     public void getUpdateFromBoard(int col, int row){
-        Piece playerPieceType = player % 2 == 0 ? new Piece(PieceType.WHITEPIECE) : new Piece(PieceType.REDPIECE);
-        King playerKingType = new King(playerPieceType.getDifferentType());
-        PieceType hasPiece;
-        Move aiMove;
+        playerPieceType = player % 2 == 0 ? new Piece(PieceType.WHITEPIECE) : new Piece(PieceType.REDPIECE);
+        playerKingType = new King(playerPieceType.getDifferentType());
 
         // to make the move
         if(model.hasPiece(row, col) == PieceType.SHADOW) {
@@ -125,6 +128,8 @@ public class Presenter {
 
                 }
             }
+
+            view.updateBoard(model.getBoard());
         }
 
         // to make the shadows
@@ -140,9 +145,12 @@ public class Presenter {
 
             model.removeAllPieces(PieceType.SHADOW);
             moves = model.getAllMoves(lastChosenPiece, row, col, hasToEat, true);
-            for (int[] move : moves) {
+            for (int[] move : moves.keySet()) {
                 model.addPiece(PieceType.SHADOW, move[0], move[1]);
             }
+
+            view.updateBoard(model.getBoard());
+            view.changePieceColor(lastChosenPiece.getPieceType(), row, col, lastChosenPiece.getPieceColor() == PieceType.WHITEPIECE ? "#696565" : "#6e2525");
 
         }
         /*
@@ -169,7 +177,7 @@ public class Presenter {
         }
          */
 
-        view.updateBoard(model.getBoard());
+
     }
 
     public void aiWon(){
@@ -208,52 +216,50 @@ public class Presenter {
                 gameMode = GameMode.playerVsAi;
             }
 
-            player = 0;
-            moves = new HashSet<>();
-            hasToEat = false;
-            timeRemained[0] = timeRemained[1] = 0;
-            view.initializeBoard();
-            view.updateBoard(model.initializeBoard());
-            int[] convertedTime = convertToTime(TIMER_DURATION);
-
-            view.message("player 1", 880, 50, false, 0); // bottom player number message
-            view.message("player 2", 880, 450, false, 1); // top player number message
-
-            view.message("Timer: ", 850, 200, true, 2); // bottom timer
-            view.message("Timer: ", 850, 600, true, 3); // top timer
-
-            view.message(String.format("%02d", convertedTime[0]) + ":" + String.format("%02d", convertedTime[1]), 980, 600, false, 4); // top player time message
-            view.message(String.format("%02d", convertedTime[0]) + ":" + String.format("%02d", convertedTime[1]), 980, 200, false, 5); // bottom player time message
-
-            view.setTimer(timeRemained[0], TIMER_DURATION - timeRemained[0], 0);
+            initializeGame();
         }
 
         else if(questionType.equals("restart")){
             if(ans.equals("Yes")){
-                player = 0;
-                moves = new HashSet<>();
-                hasToEat = false;
-                timeRemained[0] = timeRemained[1] = 0;
-                view.initializeBoard();
-                view.updateBoard(model.initializeBoard());
-                int[] convertedTime = convertToTime(TIMER_DURATION);
-
-                view.message("player 1", 880, 50, false, 0); // bottom player number message
-                view.message("player 2", 880, 450, false, 1); // top player number message
-
-                view.message("Timer: ", 850, 200, true, 2); // bottom timer
-                view.message("Timer: ", 850, 600, true, 3); // top timer
-
-                view.message(String.format("%02d", convertedTime[0]) + ":" + String.format("%02d", convertedTime[1]), 980, 600, false, 4); // top player time message
-                view.message(String.format("%02d", convertedTime[0]) + ":" + String.format("%02d", convertedTime[1]), 980, 200, false, 5); // bottom player time message
-
-                view.setTimer(timeRemained[0], TIMER_DURATION - timeRemained[0], 0); // bottom timer
+                initializeGame();
 //                view.setTimer(100, 1);
             }
 
             else{
                 view.quit();
             }
+        }
+
+        else if(question.equals("See AI Move")){
+            playerPieceType = player % 2 == 0 ? new Piece(PieceType.WHITEPIECE) : new Piece(PieceType.REDPIECE);
+            playerKingType = new King(playerPieceType.getDifferentType());
+
+            hasToEat = model.canEat(playerPieceType);
+
+            aiMove = model.getAIMove(playerPieceType);
+            while(aiMove == null){
+                System.out.println("asus");
+                aiMove = model.getAIMove(playerPieceType);
+            }
+
+            int[] aiFromCord = aiMove.getPieceFromCord();
+            int[] aiToCord = aiMove.getPieceToCord();
+
+            if((hasPiece = model.hasPiece(aiFromCord[0], aiFromCord[1])) == playerPieceType.getPieceType())
+                lastChosenPiece = playerPieceType;
+
+            else if(hasPiece == playerKingType.getPieceType())
+                lastChosenPiece = playerKingType;
+
+            else
+                return;
+
+            model.removeAllPieces(PieceType.SHADOW);
+            moves = model.getAllMoves(lastChosenPiece, aiFromCord[0], aiFromCord[1], hasToEat, true);
+            model.addPiece(PieceType.SHADOW, aiToCord[0], aiToCord[1]);
+
+            view.updateBoard(model.getBoard());
+            view.changePieceColor(lastChosenPiece.getPieceType(), aiFromCord[0], aiFromCord[1], lastChosenPiece.getPieceColor() == PieceType.WHITEPIECE ? "#696565" : "#6e2525");
         }
     }
 
@@ -274,6 +280,28 @@ public class Presenter {
         timeRemained[player % 2] = time;
     }
 
+    public void initializeGame(){
+        player = 0;
+        moves = new HashMap<int[], String>();
+        hasToEat = false;
+        timeRemained[0] = timeRemained[1] = 0;
+        view.initializeBoard();
+        view.updateBoard(model.initializeBoard());
+        int[] convertedTime = convertToTime(TIMER_DURATION);
+
+        view.message("player 1", 880, 50, false, 0); // bottom player number message
+        view.message("player 2", 880, 450, false, 1); // top player number message
+
+        view.message("Timer: ", 850, 200, true, 2); // bottom timer
+        view.message("Timer: ", 850, 600, true, 3); // top timer
+
+        view.message(String.format("%02d", convertedTime[0]) + ":" + String.format("%02d", convertedTime[1]), 980, 600, false, 4); // bottom player time message
+        view.message(String.format("%02d", convertedTime[0]) + ":" + String.format("%02d", convertedTime[1]), 980, 200, false, 5); // top player time message
+
+        view.addButton("See AI Move", 815, 300);
+
+        view.setTimer(timeRemained[0], TIMER_DURATION - timeRemained[0], 0);
+    }
     // returns time in minutes and seconds
     public int[] convertToTime(int time){
         int[] convertedTime = new int[2];

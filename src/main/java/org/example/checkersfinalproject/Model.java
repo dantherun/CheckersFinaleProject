@@ -6,15 +6,15 @@ import java.util.Set;
 
 public class Model {
     private BitBoard players;
-    private Set<int[]> moves;
+    private HashMap<int[], String> moves;
     private int[] pieceToMove;
-    private QuaternaryTree eatingPossibilities;
+    //private QuaternaryTree eatingPossibilities;
    // private HashMap<String, QuaternaryTree> eatingPathPointer;
     private HashMap<String, long[]> eatingPathPointer;
     private HashMap<String, QuaternaryTree> lastPathPos;
     private AI ai;
     private boolean becomesKing;
-    private boolean firstCheck;
+    //private boolean firstCheck;
     public static HashMap<DirectionVector, int[]> intDirectionVector;
 
     static {
@@ -28,8 +28,8 @@ public class Model {
         becomesKing = false;
         ai = new AI(this, this.getBitBoard());
         players = new BitBoard();
-        eatingPossibilities = null;
-        moves = new HashSet<>();
+        //eatingPossibilities = null;
+        moves = new HashMap<>();
         pieceToMove = new int[2];
         eatingPathPointer = new HashMap<>();
         lastPathPos = new HashMap<>();
@@ -300,11 +300,12 @@ public class Model {
 //
 //
 //    }
-    public void getEatings(Piece piece, int row, int col, long piecesToEat, long kingsToEat){
+    public void getEatings(Piece piece, int row, int col, long piecesToEat, long kingsToEat, int numberOfJumps){
         int[] move;
         PieceType pieceToEat;
         long lastPiecesToEat = piecesToEat;
         long lastKingsToEat = kingsToEat;
+        int lastNumberOfJumps = numberOfJumps;
 //        piecesToEat = 0;
 //        kingsToEat = 0;
 
@@ -313,8 +314,15 @@ public class Model {
             if ((pieceToEat = canEat(piece, row, col, direction)) != PieceType.None &&
                     !eatingPathPointer.containsKey((row + tempMove[0] * 2) + "," + (col + tempMove[1] * 2))) {
 
+
+                if(!(piece instanceof King) && row + tempMove[0] * 2 == piece.rowToBeKing()){
+                    becomesKing = true;
+                    piece = new King(piece.getDifferentType());
+                }
+
+                numberOfJumps++;
                 move = new int[]{row + tempMove[0] * 2, col + tempMove[1] * 2};
-                moves.add(move);
+                moves.put(move, numberOfJumps + "," + becomesKing);
 
                 if (pieceToEat == PieceType.WHITEKING || pieceToEat == PieceType.REDKING)
                     kingsToEat = players.addPiece(kingsToEat, 7 - (row + tempMove[0]), 7 - (col + tempMove[1]));
@@ -323,27 +331,23 @@ public class Model {
 
                 eatingPathPointer.put((row + tempMove[0] * 2) + "," + (col + tempMove[1] * 2), new long[]{piecesToEat, kingsToEat});
 
-                if (piece.getPieceType() == PieceType.WHITEPIECE && row + tempMove[0] * 2 == 0) {
-                    becomesKing = true;
-                    piece = new King(PieceType.WHITEKING);
-                }
+//                if (piece.getPieceType() == PieceType.WHITEPIECE && row + tempMove[0] * 2 == 0) {
+//                    becomesKing = true;
+//                    piece = new King(PieceType.WHITEKING);
+//                }
+//
+//                else if (piece.getPieceType() == PieceType.REDPIECE && row + tempMove[0] * 2 == 7) {
+//                    becomesKing = true;
+//                    piece = new King(PieceType.REDKING);
+//                }
 
-                else if (piece.getPieceType() == PieceType.REDPIECE && row + tempMove[0] * 2 == 7) {
-                    becomesKing = true;
-                    piece = new King(PieceType.REDKING);
-                }
 
-                if(piece instanceof King && row + tempMove[0] == piece.rowToBeKing()){
-                    becomesKing = true;
-                    piece = new King(piece.getDifferentType());
-                }
-
-                getEatings(piece, row + tempMove[0] * 2, col + tempMove[1] * 2, piecesToEat, kingsToEat);
+                getEatings(piece, row + tempMove[0] * 2, col + tempMove[1] * 2, piecesToEat, kingsToEat, numberOfJumps);
             }
 
             piecesToEat = lastPiecesToEat;
             kingsToEat = lastKingsToEat;
-
+            numberOfJumps = lastNumberOfJumps;
         }
 
         /*if(piece == PieceType.WHITEPIECE){
@@ -592,7 +596,11 @@ public class Model {
         */
     }
 
-    public void getMoves(Piece piece, int row, int col){
+    public HashMap<int[], String> getMoves(){
+        return moves;
+    }
+
+        public void getMoves(Piece piece, int row, int col){
         int[] move;
 
         for(DirectionVector direction : piece.getEatingDirections()) {
@@ -605,7 +613,7 @@ public class Model {
                     becomesKing = true;
 
                 move = new int[]{row + tempMove[0], col + tempMove[1]};
-                moves.add(move);
+                moves.put(move, 1 + "," + becomesKing);
             }
         }
 
@@ -726,8 +734,8 @@ public class Model {
     //    eatingPossibilities = new QuaternaryTree(new int[]{-1, -1}, new int[]{-1, -1}, "", null);
    //     eatingPathPointer.clear();
         while((leftestPiece = players.getFirstPiece(pieces))[0] != -1){
-            firstCheck = true;
-            getEatings(piece, leftestPiece[0], leftestPiece[1], 0, 0);
+           // firstCheck = true;
+            getEatings(piece, leftestPiece[0], leftestPiece[1], 0, 0, 0);
 //            if(hasSon(eatingPossibilities)){
 //                //players.setPieces(piece, pieces);
 //                return true;
@@ -738,8 +746,8 @@ public class Model {
         }
 
         while((leftestPiece = players.getFirstPiece(kings))[0] != -1){
-            firstCheck = true;
-            getEatings(new King(kingType), leftestPiece[0], leftestPiece[1], 0, 0);
+           // firstCheck = true;
+            getEatings(new King(kingType), leftestPiece[0], leftestPiece[1], 0, 0, 0);
 //            if(hasSon(eatingPossibilities)){
 //                //players.setPieces(piece, pieces);
 //                return true;
@@ -753,29 +761,29 @@ public class Model {
         return !eatingPathPointer.isEmpty();
     }
 
-    public Set<int[]> getAllMoves(Piece piece, int row, int col, boolean hasToEat, boolean clear){
+    public HashMap<int[], String> getAllMoves(Piece piece, int row, int col, boolean hasToEat, boolean clear){
         if(clear){
             moves.clear();
             eatingPathPointer.clear();
         }
 
         //eatingPossibilities = new QuaternaryTree(new int[]{-1, -1}, new int[]{-1, -1}, "", null);
-        firstCheck = true;
+       // firstCheck = true;
         becomesKing = false;
-        getEatings(piece, row, col, 0, 0);
+        getEatings(piece, row, col, 0, 0, 0);
         if(!hasToEat)
             getMoves(piece, row, col);
         pieceToMove = new int[]{row, col};
         return moves;
     }
 
-    private Set<int[]> getAllMovesWithOutClearing(Piece piece, int row, int col){
+    private HashMap<int[], String> getAllMovesWithOutClearing(Piece piece, int row, int col){
         pieceToMove = new int[]{row, col};
         PieceType kingType = piece.getDifferentType();
         //eatingPossibilities = new QuaternaryTree(new int[]{-1, -1}, new int[]{-1, -1}, "", null);
-        firstCheck = true;
+       // firstCheck = true;
         becomesKing = false;
-        getEatings(piece, row, col, 0, 0);
+        getEatings(piece, row, col, 0, 0, 0);
         getMoves(piece, row, col);
         getMoves(new Piece(kingType), row, col);
         return moves;
@@ -891,8 +899,24 @@ public class Model {
     }
 
     public Model clone(){
+//        private BitBoard players;
+//        private HashMap<int[], Integer> moves;
+//        private int[] pieceToMove;
+//        //private QuaternaryTree eatingPossibilities;
+//        // private HashMap<String, QuaternaryTree> eatingPathPointer;
+//        private HashMap<String, long[]> eatingPathPointer;
+//        private HashMap<String, QuaternaryTree> lastPathPos;
+//        private AI ai;
+//        private boolean becomesKing;
+//        //private boolean firstCheck;
+//        public static HashMap<DirectionVector, int[]> intDirectionVector;
         Model newModel = new Model();
-        newModel.players = this.players;
+        newModel.players = this.players.clone();
+        newModel.moves = new HashMap<>(moves);
+        newModel.eatingPathPointer = new HashMap<>(eatingPathPointer);
+        newModel.lastPathPos = new HashMap<>(lastPathPos);
+        newModel.ai = ai;
+        newModel.becomesKing = becomesKing;
 
         //newModel.players = players.clone();
         return newModel;
@@ -935,9 +959,10 @@ public class Model {
 //        return PieceType.None;
 //    }
 
-    public HashMap<String, long[]> getEatingPosibilities(){
+    public HashMap<String, long[]> getEatingPathPointer(){
         return eatingPathPointer;
     }
+
 
     public BitBoard getBitBoard(){
         return this.players;

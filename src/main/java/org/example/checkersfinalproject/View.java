@@ -13,8 +13,7 @@ public class View implements IView{
     }
 
     @Override
-    public void updateBoard(PieceType[][] board) {for (int j = 0; j < 8; j++) {
-    }
+    public void updateBoard(PieceType[][] board) {
         visualBoard.removePieces();
         for (int i = 0; i < 8; i++) {
             for (int j = 0; j < 8; j++) {
@@ -87,6 +86,10 @@ public class View implements IView{
         presenter.answer(message, buttonContent, questionType);
     }
 
+    public void buttonPushed(String message){
+        presenter.answer(message, "", "");
+    }
+
     public void initializeBoard(){
         visualBoard.initializeBoard();
     }
@@ -97,6 +100,14 @@ public class View implements IView{
 
     public void quit(){
         visualBoard.quit();
+    }
+
+    public void addButton(String message, int x, int y){
+        visualBoard.addButton(message, x, y);
+    }
+
+    public void changePieceColor(PieceType type, int row, int col, String color){
+        visualBoard.changePieceColor(type, col, row, color);
     }
 
 }
