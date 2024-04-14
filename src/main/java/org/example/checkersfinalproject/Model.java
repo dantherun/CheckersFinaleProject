@@ -160,6 +160,50 @@ public class Model {
     }
 
      */
+
+//    public void makeMove(Piece piece, int row, int col, ){
+//        PieceType enemyPiece;
+//
+//        enemyPiece = piece.getEnemyPieceType();
+//        if(becomesKing){
+//            players.removePiece(piece.getPieceType(), 7 - pieceToMove[0], 7 - pieceToMove[1]);
+//            //  piece = piece == PieceType.WHITEPIECE ? PieceType.WHITEKING : PieceType.REDKING;
+//            piece = new King(piece.getDifferentType());
+//            players.addPiece(piece.getPieceType(), 7 - pieceToMove[0], 7 - pieceToMove[1]);
+//        }
+//
+//        long[] piecesToRemove = eatingPathPointer.get(row + "," + col);
+//        if(piecesToRemove != null)
+//            players.removePieces(enemyPiece, piecesToRemove[0], piecesToRemove[1]);
+//
+//        players.movePieces(piece.getPieceType(), 7 - pieceToMove[0], 7 - pieceToMove[1], 7 - row, 7 - col);
+//
+//
+//    }
+
+    public void makeMove(Piece piece, int row, int col, boolean becomesKing){
+        PieceType enemyPiece;
+        //QuaternaryTree destination = eatingPathPointer.get(row + "," + col);
+
+        enemyPiece = piece.getEnemyPieceType();
+
+        if(becomesKing){
+            players.removePiece(piece.getPieceType(), 7 - pieceToMove[0], 7 - pieceToMove[1]);
+            //  piece = piece == PieceType.WHITEPIECE ? PieceType.WHITEKING : PieceType.REDKING;
+            piece = new King(piece.getDifferentType());
+            players.addPiece(piece.getPieceType(), 7 - pieceToMove[0], 7 - pieceToMove[1]);
+        }
+
+        long[] piecesToRemove = eatingPathPointer.get(row + "," + col);
+        if(piecesToRemove != null)
+            players.removePieces(enemyPiece, piecesToRemove[0], piecesToRemove[1]);
+
+
+        players.movePieces(piece.getPieceType(), 7 - pieceToMove[0], 7 - pieceToMove[1], 7 - row, 7 - col);
+
+
+    }
+
     public void makeMove(Piece piece, int row, int col){
         PieceType enemyPiece;
         //QuaternaryTree destination = eatingPathPointer.get(row + "," + col);
@@ -613,7 +657,7 @@ public class Model {
                     becomesKing = true;
 
                 move = new int[]{row + tempMove[0], col + tempMove[1]};
-                moves.put(move, 1 + "," + becomesKing);
+                moves.put(move, 0 + "," + becomesKing);
             }
         }
 
@@ -969,7 +1013,7 @@ public class Model {
     }
 
     public Move getAIMove(Piece piece){
-        return ai.chooseMove(piece, this);
+        return ai.chooseMove(piece, this, false);
     }
 
 }

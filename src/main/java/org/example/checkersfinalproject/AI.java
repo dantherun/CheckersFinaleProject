@@ -32,7 +32,7 @@ public class AI {
     public boolean isSidePiece(int[] piece){
         return piece[1] == 0 || piece[1] == 7;
     }
-    public Move chooseMove(Piece pieceType, Model model){
+    public Move chooseMove(Piece pieceType, Model model, boolean isResponse){
         BitBoard board = model.getBitBoard();
         boolean hasToEat;
         Model newModel = model.clone();
@@ -48,11 +48,11 @@ public class AI {
         int[] leftestPiece;
 
         while ((leftestPiece = board.getFirstPiece(pieces))[0] != -1) {
-            newModel.getEatings(pieceType, leftestPiece[0], leftestPiece[1], 0, 0, 0);
+            //newModel.getEatings(pieceType, leftestPiece[0], leftestPiece[1], 0, 0, 0);
             if (!(possibleMoves = newModel.getAllMoves(pieceType, leftestPiece[0], leftestPiece[1], hasToEat, true)).isEmpty()) {
                 for (Map.Entry<int[], String> move : possibleMoves.entrySet()) {
                     evaluation = Integer.parseInt(move.getValue().split(",")[0]);
-                    moves.add(new Move(evaluation, leftestPiece, move.getKey(), Boolean.parseBoolean(move.getValue().split(",")[1])));
+                    moves.add(new Move(evaluation, leftestPiece, move.getKey(), Boolean.parseBoolean(move.getValue().split(",")[1]), pieceType.getPieceType()));
                 }
             }
 
@@ -64,7 +64,7 @@ public class AI {
             if (!(possibleMoves = newModel.getAllMoves(kingType, leftestPiece[0], leftestPiece[1], hasToEat, true)).isEmpty()) {
                 for (Map.Entry<int[], String> move : possibleMoves.entrySet()) {
                     evaluation = Integer.parseInt(move.getValue().split(",")[0]);
-                    moves.add(new Move(evaluation, leftestPiece, move.getKey(), Boolean.parseBoolean(move.getValue().split(",")[1])));
+                    moves.add(new Move(evaluation, leftestPiece, move.getKey(), Boolean.parseBoolean(move.getValue().split(",")[1]), kingType.getPieceType()));
                 }
 
 //                for (int[] cord : possibleMoves) {
@@ -81,8 +81,9 @@ public class AI {
         int currentEatings = 0;
         for (Move move : moves){
             Model evalModel = newModel.clone();
-            evalModel.makeMove(pieceType, move.getPieceFromCord()[0], move.getPieceFromCord()[1]);
-            evaluate(pieceType, move, evalModel);
+            evalModel.getAllMoves(kingType, move.getPieceFromCord()[0], move.getPieceFromCord()[1], hasToEat, true);
+            evalModel.makeMove(pieceType, move.getPieceToCord()[0], move.getPieceToCord()[1]);
+            evaluate(pieceType, move, evalModel, isResponse);
             int a = 1;
             a++;
             //currentEatings = countEatings(move);
@@ -99,14 +100,50 @@ public class AI {
         return bestMove;
     }
 
-    public void evaluate(Piece pieceType, Move move, Model model){
+    public void evaluate(Piece pieceType, Move move, Model model, boolean isResponse){
         Piece newPiece = pieceType;
+        boolean enemyCanEat = false;
         model.getEatingPathPointer().clear();
 
         // check if will be a king
         if(move.becomesAKing())
             move.addEvaluation(2);
 
+        //checks counter attack
+//        model.getEatings(new Piece(pieceType.getEnemyPieceType()), move.getPieceToCord()[0], move.getPieceToCord()[1], 0, 0, 0);
+//        model.getEatings(new King(pieceType.getEnemyKingType()), move.getPieceToCord()[0], move.getPieceToCord()[1], 0, 0, 0);
+        model.canEat(new Piece(pieceType.getEnemyPieceType()));
+        for(Map.Entry<String, long[]> eatingCord: model.getEatingPathPointer().entrySet()){
+            int[] pieceCords = model.getBitBoard().convertToCordinates(eatingCord.getValue()[0]);
+            int[] kingCords = model.getBitBoard().convertToCordinates(eatingCord.getValue()[1]);
+            if(pieceCords[0] == move.getPieceToCord()[0] && pieceCords[1] == move.getPieceToCord()[1] ||
+                    kingCords[0] == move.getPieceToCord()[0] && kingCords[1] == move.getPieceToCord()[1])
+                enemyCanEat = true;
+        }
+
+        if(enemyCanEat || !isResponse){
+            Model newModel = model.clone();
+            Move enemyBestMove = chooseMove(new Piece(pieceType.getEnemyPieceType()), model.clone(), true);
+            move.subtractEvaluation(enemyBestMove.getEvaluation());
+        }
+
+        // checks if the piece is essential (if on the first row of the player)
+        switch (move.getPiece()){
+            case WHITEPIECE:
+                if((move.getPieceFromCord()[0] == 7) && (move.getPieceFromCord()[1] == 2 || move.getPieceFromCord()[1] == 6)){
+                    move.subtractEvaluation(1);
+                }
+                break;
+
+            case REDPIECE:
+                if((move.getPieceFromCord()[0] == 0) && (move.getPieceFromCord()[1] == 1 || move.getPieceFromCord()[1] == 5)){
+                    move.subtractEvaluation(1);
+                }
+                break;
+        }
+
+        int a = 0;
+        a++;
 //        // check if will be a king
 //        if((pieceType.getPieceType() == PieceType.WHITEPIECE && move.getPieceToCord()[0] == 0) ||
 //                (pieceType.getPieceType() == PieceType.REDPIECE && move.getPieceToCord()[0] == 7)){
@@ -124,6 +161,8 @@ public class AI {
 //        }
 
     }
+
+
 
 //    public int countEatings(Move move){
 //

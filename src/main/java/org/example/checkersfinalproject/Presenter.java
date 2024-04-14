@@ -6,7 +6,7 @@ import java.util.Objects;
 import java.util.Set;
 
 public class Presenter {
-    public int TIMER_DURATION = 500;
+    public int TIMER_DURATION = 50000;
     private final IView view;
     private final Model model;
     private int player;
@@ -298,7 +298,7 @@ public class Presenter {
         view.message(String.format("%02d", convertedTime[0]) + ":" + String.format("%02d", convertedTime[1]), 980, 600, false, 4); // bottom player time message
         view.message(String.format("%02d", convertedTime[0]) + ":" + String.format("%02d", convertedTime[1]), 980, 200, false, 5); // top player time message
 
-        view.addButton("See AI Move", 815, 300);
+        view.addButton("See AI Move", 812, 300);
 
         view.setTimer(timeRemained[0], TIMER_DURATION - timeRemained[0], 0);
     }

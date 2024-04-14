@@ -4,8 +4,8 @@ public class Move {
     private int evaluation;
     private int[] pieceFromCord;
     private int[] pieceToCord;
-
     private boolean becomesAKing;
+    private PieceType piece;
 
     public Move(int evaluation, int[] pieceFromCord){
         this.evaluation = evaluation;
@@ -14,11 +14,12 @@ public class Move {
         this.becomesAKing = false;
     }
 
-    public Move(int evaluation, int[] pieceFromCord, int[] pieceToCord, boolean becomesAKing){
+    public Move(int evaluation, int[] pieceFromCord, int[] pieceToCord, boolean becomesAKing, PieceType piece){
         this.evaluation = evaluation;
         this.pieceFromCord = pieceFromCord;
         this.pieceToCord = pieceToCord;
         this.becomesAKing = becomesAKing;
+        this.piece = piece;
     }
 
     public int getEvaluation() {
@@ -41,13 +42,18 @@ public class Move {
         this.evaluation += evaluation;
     }
 
-    public void subtructEvaluation(int evaluation){
+    public void subtractEvaluation(int evaluation){
         this.evaluation -= evaluation;
-    }
-    public Move clone(){
-        return new Move(evaluation, pieceFromCord, pieceToCord, becomesAKing);
     }
     public boolean becomesAKing(){
         return becomesAKing;
     }
+
+    public PieceType getPiece(){
+        return piece;
+    }
+    public Move clone(){
+        return new Move(evaluation, pieceFromCord, pieceToCord, becomesAKing, piece);
+    }
+
 }

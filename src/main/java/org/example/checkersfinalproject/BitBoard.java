@@ -457,18 +457,15 @@ public class BitBoard {
     }
 
     public int[] getFirstPiece(long pieces){
-        int[] pieceCordination = new int[2];
+        int[] pieceCordination = new int[]{-1, -1};
         int leftestBit = Long.numberOfLeadingZeros(pieces);
         leftestBit = 63 - leftestBit;
         if (leftestBit != -1) {
-            int numberOfDigits = leftestBit;
-            pieceCordination[0] = 7 - numberOfDigits / 8;
-            pieceCordination[1] = 7 - numberOfDigits % 8;
-            return pieceCordination;
+            pieceCordination[0] = 7 - leftestBit / 8;
+            pieceCordination[1] = 7 - leftestBit % 8;
         }
 
-        else
-            return new int[]{-1, -1};
+        return pieceCordination;
     }
 
 //    public void removeFirstPiece(PieceType piece){
@@ -522,6 +519,18 @@ public class BitBoard {
         }
 
         return piecesSet;
+    }
+
+    public int[] convertToCordinates(long bits){
+        int[] cords = new int[]{-1, -1};
+        int leftestBit = Long.numberOfLeadingZeros(bits);
+        leftestBit = 63 - leftestBit;
+        if (leftestBit != -1) {
+            cords[0] = 7 - leftestBit / 8;
+            cords[1] = 7 - leftestBit % 8;
+        }
+
+        return cords;
     }
 
 //    public void setPieces(PieceType piece, long newPieces){
