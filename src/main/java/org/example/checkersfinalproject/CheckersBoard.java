@@ -28,7 +28,7 @@ public class CheckersBoard extends Application {
     private SplitPane splitPane;
     private Tile[][] board;
     private ArrayList<Text> texts;
-    private ArrayList<Button> buttons;
+    private Button[] buttons;
     private Group tileGroup;
     private Group pieceGroup;
     private Group textGroup;
@@ -46,7 +46,7 @@ public class CheckersBoard extends Application {
     public CheckersBoard(){
         board = new Tile[WIDTH][HEIGHT];
         texts = new ArrayList<>();
-        buttons = new ArrayList<>();
+        buttons = new Button[10];
         tileGroup = new Group();
         pieceGroup = new Group();
         textGroup = new Group();
@@ -254,7 +254,7 @@ public class CheckersBoard extends Application {
         secondsPassed = setSeconds;
         Timeline timeline = new Timeline(new KeyFrame(Duration.seconds(1), event -> {
             secondsPassed++;
-            System.out.println(setSeconds + ", " + duration);
+            //System.out.println(setSeconds + ", " + duration);
             view.updateTimer(secondsPassed);
 //                message(secondsPassed);
 //                timerText.setText("Timer: " + secondsPassed + " seconds");
@@ -322,7 +322,7 @@ public class CheckersBoard extends Application {
         root.setAlignment(Pos.CENTER);
         root.getChildren().addAll(questionText, buttonBox);
 
-        Scene scene = new Scene(root, 1100, 800);
+        Scene scene = new Scene(root, 1000, 700);
         if(alert){
             secondaryStage.setScene(scene);
             secondaryStage.setTitle("Checkers");
@@ -414,7 +414,7 @@ public class CheckersBoard extends Application {
 //        alert.showAndWait();
     }
 
-    public void addButton(String message, int x, int y){
+    public void addButton(String message, int x, int y, int buttonId){
         Button button = new Button(message);
 
         button.setFont(new Font(40));
@@ -435,9 +435,19 @@ public class CheckersBoard extends Application {
         root.setAlignment(Pos.CENTER);
         root.getChildren().add(buttonBox);
 
-        buttons.add(button);
+        if(buttons[buttonId] != null)
+            buttonGroup.getChildren().remove(buttons[buttonId]);
+
+        buttons[buttonId] = button;
         buttonGroup.getChildren().add(button);
 
+    }
+
+    public void removeButton(int buttonId){
+        Button button = buttons[buttonId];
+        if(button != null)
+            buttonGroup.getChildren().remove(button);
+        buttons[buttonId] = null;
     }
 
     public void quit(){

@@ -6,14 +6,14 @@ import java.util.Set;
 
 public class Model {
     private BitBoard players;
-    private HashMap<int[], String> moves;
+    private HashMap<String, String> moves;
     private int[] pieceToMove;
     //private QuaternaryTree eatingPossibilities;
    // private HashMap<String, QuaternaryTree> eatingPathPointer;
     private HashMap<String, long[]> eatingPathPointer;
     private HashMap<String, QuaternaryTree> lastPathPos;
     private AI ai;
-    private boolean becomesKing;
+   // private boolean becomesKing;
     //private boolean firstCheck;
     public static HashMap<DirectionVector, int[]> intDirectionVector;
 
@@ -25,7 +25,7 @@ public class Model {
         intDirectionVector.put(DirectionVector.southeast, new int[]{1, 1});
     }
     public Model(){
-        becomesKing = false;
+      //  becomesKing = false;
         ai = new AI(this, this.getBitBoard());
         players = new BitBoard();
         //eatingPossibilities = null;
@@ -204,156 +204,180 @@ public class Model {
 
     }
 
-    public void makeMove(Piece piece, int row, int col){
+    public void makeMove(Piece piece, int row, int col, HashMap<String, String> move){
         PieceType enemyPiece;
-        //QuaternaryTree destination = eatingPathPointer.get(row + "," + col);
 
         enemyPiece = piece.getEnemyPieceType();
-//        if(piece == PieceType.WHITEPIECE){
-//            enemyPiece = PieceType.REDPIECE;
-//        }
-//
-//        else if(piece == PieceType.WHITEKING){
-//            enemyPiece = PieceType.REDPIECE;
-//        }
-//
-//        else if(piece == PieceType.REDPIECE) {
-//            enemyPiece = PieceType.WHITEPIECE;
-//        }
-//
-//        else{
-//            enemyPiece = PieceType.WHITEPIECE;
-//        }
 
-        // not killing
-//        if(piecesToEat + kingsToEat == 0){
-//            if(piece == PieceType.WHITEPIECE){
-//                if(row == 0){
-//                    players.removePiece(piece, 7 - pieceToMove[0], 7 - pieceToMove[1]);
-//                    piece = PieceType.WHITEKING;
-//                    players.addPiece(piece, 7 - pieceToMove[0], 7 - pieceToMove[1]);
-//                }
-//
-////                else
-////                    players.movePieces(piece, 7 - pieceToMove[0], 7 - pieceToMove[1], 7 - row, 7 - col);
-//            }
-//
-//
-//            else if(piece == PieceType.REDPIECE) {
-//                if(row == 7){
-//                    players.removePiece(piece, 7 - pieceToMove[0], 7 - pieceToMove[1]);
-//                    piece = PieceType.REDKING;
-//                    players.addPiece(PieceType.REDKING, 7 - pieceToMove[0], 7 - pieceToMove[1]);
-//                }
-//
-////                else
-////                    players.movePieces(piece, 7 - pieceToMove[0], 7 - pieceToMove[1], 7 - row, 7 - col);
-//            }
-//
-//            players.movePieces(piece, 7 - pieceToMove[0], 7 - pieceToMove[1], 7 - row, 7 - col);
-//        }
+        if(move.get(row + "," + col).split(",")[1].equals("true")){
+            players.removePiece(piece.getPieceType(), 7 - pieceToMove[0], 7 - pieceToMove[1]);
+            //  piece = piece == PieceType.WHITEPIECE ? PieceType.WHITEKING : PieceType.REDKING;
+            piece = new King(piece.getDifferentType());
+            players.addPiece(piece.getPieceType(), 7 - pieceToMove[0], 7 - pieceToMove[1]);
+        }
 
+        long[] piecesToRemove = eatingPathPointer.get(row + "," + col);
+        if(piecesToRemove != null)
+            players.removePieces(enemyPiece, piecesToRemove[0], piecesToRemove[1]);
 
-        //PieceType enemyPiece = piece == PieceType.WHITEPIECE ? (PieceType.REDPIECE | PieceType.REDKING): PieceType.WHITEPIECE;
-        //players.movePieces(piece, 7 - pieceToMove[0], 7 - pieceToMove[1], 7 - row, 7 - col);
-        //QuaternaryTree destination = findDestination(eatingPossibilities, row, col);
-
-       // int[] asus = new int[]{row, col};
-
-        //DirectionVector direct = convertToDirection(row, col, pieceToMove[0],  pieceToMove[1]);
-//        if(hasSon(eatingPosibilities)){
-//            if(direct == DirectionVector.northwest)
-//                removeEatenEnemies(eatingPosibilities.getTopLeft(), enemyPiece, row, col);
-//
-//            else if(direct == DirectionVector.northeast)
-//                removeEatenEnemies(eatingPosibilities.getTopRight(), enemyPiece, row, col);
-//
-//            else if(direct == DirectionVector.southwest)
-//                removeEatenEnemies(eatingPosibilities.getButtomLeft(), enemyPiece, row, col);
-//
-//            else if(direct == DirectionVector.southeast)
-//                removeEatenEnemies(eatingPosibilities.getButtomRight(), enemyPiece, row, col);
-//        }
-
-        // killing
-       // else{
-            if(becomesKing){
-                players.removePiece(piece.getPieceType(), 7 - pieceToMove[0], 7 - pieceToMove[1]);
-              //  piece = piece == PieceType.WHITEPIECE ? PieceType.WHITEKING : PieceType.REDKING;
-                piece = new King(piece.getDifferentType());
-                players.addPiece(piece.getPieceType(), 7 - pieceToMove[0], 7 - pieceToMove[1]);
-            }
-
-            long[] piecesToRemove = eatingPathPointer.get(row + "," + col);
-            if(piecesToRemove != null)
-                players.removePieces(enemyPiece, piecesToRemove[0], piecesToRemove[1]);
-
-            //removeEatenEnemies(destination, enemyPiece, enemyKing, row, col);
-//            if(destination.getPlayerType().equals("king") && !(piece == PieceType.WHITEKING || piece == PieceType.REDKING)){
-//                players.removePiece(piece, 7 - pieceToMove[0], 7 - pieceToMove[1]);
-//                piece = piece == PieceType.WHITEPIECE ? PieceType.WHITEKING : PieceType.REDKING;
-//                players.addPiece(piece, 7 - pieceToMove[0], 7 - pieceToMove[1]);
-//            }
-
-            players.movePieces(piece.getPieceType(), 7 - pieceToMove[0], 7 - pieceToMove[1], 7 - row, 7 - col);
-      //  }
-
-
-//        for (int[] enemies : eatingPathPointer) {
-//            players.removePiece(enemyPiece, 7 - enemies[0], 7 - enemies[1]);
-//        }
+        players.movePieces(piece.getPieceType(), 7 - pieceToMove[0], 7 - pieceToMove[1], 7 - row, 7 - col);
 
 
     }
 
-//    public QuaternaryTree findDestination(QuaternaryTree eatingPosibilities, int row, int col){
-//        QuaternaryTree pos = null;
-//        if(eatingPosibilities != null){
-//            if(eatingPosibilities.getPlayerPosition()[0] == row && eatingPosibilities.getPlayerPosition()[1] == col)
-//                return pos = eatingPosibilities;
+//    public void makeMove(Piece piece, int row, int col){
+//        PieceType enemyPiece;
+//        //QuaternaryTree destination = eatingPathPointer.get(row + "," + col);
 //
-//            if((pos = findDestination(eatingPosibilities.getTopLeft(), row, col)) != null) return pos;
-//            if((pos = findDestination(eatingPosibilities.getTopRight(), row, col)) != null) return pos;
-//            if((pos = findDestination(eatingPosibilities.getButtomLeft(), row, col)) != null) return pos;
-//            if((pos = findDestination(eatingPosibilities.getButtomRight(), row, col)) != null) return pos;
-//        }
-//
-//        return pos;
-//    }
-//    public void removeEatenEnemies(QuaternaryTree eatingPosibilities, PieceType enemyPiece, PieceType enemyKing, int row, int col){
-////        if(eatingPosibilities != null){
-////            players.removePiece(enemyPiece, 7 - eatingPosibilities.getEnemyToKill()[0], 7 - eatingPosibilities.getEnemyToKill()[1]);
-////            if(eatingPosibilities.getPlayerPosition()[0] == row && eatingPosibilities.getPlayerPosition()[1] == col)
-////                return;
+//        enemyPiece = piece.getEnemyPieceType();
+////        if(piece == PieceType.WHITEPIECE){
+////            enemyPiece = PieceType.REDPIECE;
+////        }
 ////
-////            removeEatenEnemies(eatingPosibilities.getTopLeft(), enemyPiece, row, col);
-////            removeEatenEnemies(eatingPosibilities.getTopRight(), enemyPiece, row, col);
-////            removeEatenEnemies(eatingPosibilities.getButtomLeft(), enemyPiece, row, col);
-////            removeEatenEnemies(eatingPosibilities.getButtomRight(), enemyPiece, row, col);
+////        else if(piece == PieceType.WHITEKING){
+////            enemyPiece = PieceType.REDPIECE;
+////        }
+////
+////        else if(piece == PieceType.REDPIECE) {
+////            enemyPiece = PieceType.WHITEPIECE;
+////        }
+////
+////        else{
+////            enemyPiece = PieceType.WHITEPIECE;
 ////        }
 //
-//        int killRow = eatingPosibilities.getEnemyToKill()[0];
-//        int killCol = eatingPosibilities.getEnemyToKill()[1];
-////        while(eatingPosibilities != null && eatingPosibilities.getEnemyToKill()[0] != -1 && !(killRow == pieceToMove[0] && killCol == pieceToMove[1])){
-////            players.removePiece(enemyPiece, 7 - killRow, 7 - killCol);
-////            players.removePiece(enemyKing, 7 - killRow, 7 - killCol);
-////            eatingPosibilities = eatingPosibilities.getFather();
-////            killRow = eatingPosibilities.getEnemyToKill()[0];
-////            killCol = eatingPosibilities.getEnemyToKill()[1];
+//        // not killing
+////        if(piecesToEat + kingsToEat == 0){
+////            if(piece == PieceType.WHITEPIECE){
+////                if(row == 0){
+////                    players.removePiece(piece, 7 - pieceToMove[0], 7 - pieceToMove[1]);
+////                    piece = PieceType.WHITEKING;
+////                    players.addPiece(piece, 7 - pieceToMove[0], 7 - pieceToMove[1]);
+////                }
+////
+//////                else
+//////                    players.movePieces(piece, 7 - pieceToMove[0], 7 - pieceToMove[1], 7 - row, 7 - col);
+////            }
+////
+////
+////            else if(piece == PieceType.REDPIECE) {
+////                if(row == 7){
+////                    players.removePiece(piece, 7 - pieceToMove[0], 7 - pieceToMove[1]);
+////                    piece = PieceType.REDKING;
+////                    players.addPiece(PieceType.REDKING, 7 - pieceToMove[0], 7 - pieceToMove[1]);
+////                }
+////
+//////                else
+//////                    players.movePieces(piece, 7 - pieceToMove[0], 7 - pieceToMove[1], 7 - row, 7 - col);
+////            }
+////
+////            players.movePieces(piece, 7 - pieceToMove[0], 7 - pieceToMove[1], 7 - row, 7 - col);
+////        }
+//
+//
+//        //PieceType enemyPiece = piece == PieceType.WHITEPIECE ? (PieceType.REDPIECE | PieceType.REDKING): PieceType.WHITEPIECE;
+//        //players.movePieces(piece, 7 - pieceToMove[0], 7 - pieceToMove[1], 7 - row, 7 - col);
+//        //QuaternaryTree destination = findDestination(eatingPossibilities, row, col);
+//
+//       // int[] asus = new int[]{row, col};
+//
+//        //DirectionVector direct = convertToDirection(row, col, pieceToMove[0],  pieceToMove[1]);
+////        if(hasSon(eatingPosibilities)){
+////            if(direct == DirectionVector.northwest)
+////                removeEatenEnemies(eatingPosibilities.getTopLeft(), enemyPiece, row, col);
+////
+////            else if(direct == DirectionVector.northeast)
+////                removeEatenEnemies(eatingPosibilities.getTopRight(), enemyPiece, row, col);
+////
+////            else if(direct == DirectionVector.southwest)
+////                removeEatenEnemies(eatingPosibilities.getButtomLeft(), enemyPiece, row, col);
+////
+////            else if(direct == DirectionVector.southeast)
+////                removeEatenEnemies(eatingPosibilities.getButtomRight(), enemyPiece, row, col);
+////        }
+//
+//        // killing
+//       // else{
+//            if(becomesKing){
+//                players.removePiece(piece.getPieceType(), 7 - pieceToMove[0], 7 - pieceToMove[1]);
+//              //  piece = piece == PieceType.WHITEPIECE ? PieceType.WHITEKING : PieceType.REDKING;
+//                piece = new King(piece.getDifferentType());
+//                players.addPiece(piece.getPieceType(), 7 - pieceToMove[0], 7 - pieceToMove[1]);
+//            }
+//
+//            long[] piecesToRemove = eatingPathPointer.get(row + "," + col);
+//            if(piecesToRemove != null)
+//                players.removePieces(enemyPiece, piecesToRemove[0], piecesToRemove[1]);
+//
+//            //removeEatenEnemies(destination, enemyPiece, enemyKing, row, col);
+////            if(destination.getPlayerType().equals("king") && !(piece == PieceType.WHITEKING || piece == PieceType.REDKING)){
+////                players.removePiece(piece, 7 - pieceToMove[0], 7 - pieceToMove[1]);
+////                piece = piece == PieceType.WHITEPIECE ? PieceType.WHITEKING : PieceType.REDKING;
+////                players.addPiece(piece, 7 - pieceToMove[0], 7 - pieceToMove[1]);
+////            }
+//
+//            players.movePieces(piece.getPieceType(), 7 - pieceToMove[0], 7 - pieceToMove[1], 7 - row, 7 - col);
+//      //  }
+//
+//
+////        for (int[] enemies : eatingPathPointer) {
+////            players.removePiece(enemyPiece, 7 - enemies[0], 7 - enemies[1]);
 ////        }
 //
 //
 //    }
-    public void getEatings(Piece piece, int row, int col, long piecesToEat, long kingsToEat, int numberOfJumps){
-        int[] move;
+//
+////    public QuaternaryTree findDestination(QuaternaryTree eatingPosibilities, int row, int col){
+////        QuaternaryTree pos = null;
+////        if(eatingPosibilities != null){
+////            if(eatingPosibilities.getPlayerPosition()[0] == row && eatingPosibilities.getPlayerPosition()[1] == col)
+////                return pos = eatingPosibilities;
+////
+////            if((pos = findDestination(eatingPosibilities.getTopLeft(), row, col)) != null) return pos;
+////            if((pos = findDestination(eatingPosibilities.getTopRight(), row, col)) != null) return pos;
+////            if((pos = findDestination(eatingPosibilities.getButtomLeft(), row, col)) != null) return pos;
+////            if((pos = findDestination(eatingPosibilities.getButtomRight(), row, col)) != null) return pos;
+////        }
+////
+////        return pos;
+////    }
+////    public void removeEatenEnemies(QuaternaryTree eatingPosibilities, PieceType enemyPiece, PieceType enemyKing, int row, int col){
+//////        if(eatingPosibilities != null){
+//////            players.removePiece(enemyPiece, 7 - eatingPosibilities.getEnemyToKill()[0], 7 - eatingPosibilities.getEnemyToKill()[1]);
+//////            if(eatingPosibilities.getPlayerPosition()[0] == row && eatingPosibilities.getPlayerPosition()[1] == col)
+//////                return;
+//////
+//////            removeEatenEnemies(eatingPosibilities.getTopLeft(), enemyPiece, row, col);
+//////            removeEatenEnemies(eatingPosibilities.getTopRight(), enemyPiece, row, col);
+//////            removeEatenEnemies(eatingPosibilities.getButtomLeft(), enemyPiece, row, col);
+//////            removeEatenEnemies(eatingPosibilities.getButtomRight(), enemyPiece, row, col);
+//////        }
+////
+////        int killRow = eatingPosibilities.getEnemyToKill()[0];
+////        int killCol = eatingPosibilities.getEnemyToKill()[1];
+//////        while(eatingPosibilities != null && eatingPosibilities.getEnemyToKill()[0] != -1 && !(killRow == pieceToMove[0] && killCol == pieceToMove[1])){
+//////            players.removePiece(enemyPiece, 7 - killRow, 7 - killCol);
+//////            players.removePiece(enemyKing, 7 - killRow, 7 - killCol);
+//////            eatingPosibilities = eatingPosibilities.getFather();
+//////            killRow = eatingPosibilities.getEnemyToKill()[0];
+//////            killCol = eatingPosibilities.getEnemyToKill()[1];
+//////        }
+////
+////
+////    }
+    public void getEatings(Piece piece, int row, int col, long piecesToEat, long kingsToEat, int totalJumpValue){
+        String move;
         PieceType pieceToEat;
         long lastPiecesToEat = piecesToEat;
         long lastKingsToEat = kingsToEat;
-        int lastNumberOfJumps = numberOfJumps;
+        int lastTotalJumpValue = totalJumpValue;
+        int jumpValue = 4;
+        boolean becomesKing = false;
 //        piecesToEat = 0;
 //        kingsToEat = 0;
 
         for(DirectionVector direction : piece.getEatingDirections()) {
+            jumpValue = 4;
             int[] tempMove = intDirectionVector.get(direction);
             if ((pieceToEat = canEat(piece, row, col, direction)) != PieceType.None &&
                     !eatingPathPointer.containsKey((row + tempMove[0] * 2) + "," + (col + tempMove[1] * 2))) {
@@ -364,14 +388,19 @@ public class Model {
                     piece = new King(piece.getDifferentType());
                 }
 
-                numberOfJumps++;
-                move = new int[]{row + tempMove[0] * 2, col + tempMove[1] * 2};
-                moves.put(move, numberOfJumps + "," + becomesKing);
-
-                if (pieceToEat == PieceType.WHITEKING || pieceToEat == PieceType.REDKING)
+                if (pieceToEat == PieceType.WHITEKING || pieceToEat == PieceType.REDKING){
                     kingsToEat = players.addPiece(kingsToEat, 7 - (row + tempMove[0]), 7 - (col + tempMove[1]));
+                    jumpValue = 8;
+                }
+
                 else
                     piecesToEat = players.addPiece(piecesToEat, 7 - (row + tempMove[0]), 7 - (col + tempMove[1]));
+
+                totalJumpValue += jumpValue;
+                move = (row + tempMove[0] * 2) + "," + (col + tempMove[1] * 2);
+                moves.put(move, totalJumpValue + "," + becomesKing);
+
+
 
                 eatingPathPointer.put((row + tempMove[0] * 2) + "," + (col + tempMove[1] * 2), new long[]{piecesToEat, kingsToEat});
 
@@ -386,12 +415,12 @@ public class Model {
 //                }
 
 
-                getEatings(piece, row + tempMove[0] * 2, col + tempMove[1] * 2, piecesToEat, kingsToEat, numberOfJumps);
+                getEatings(piece, row + tempMove[0] * 2, col + tempMove[1] * 2, piecesToEat, kingsToEat, totalJumpValue);
             }
 
             piecesToEat = lastPiecesToEat;
             kingsToEat = lastKingsToEat;
-            numberOfJumps = lastNumberOfJumps;
+            totalJumpValue = lastTotalJumpValue;
         }
 
         /*if(piece == PieceType.WHITEPIECE){
@@ -640,12 +669,13 @@ public class Model {
         */
     }
 
-    public HashMap<int[], String> getMoves(){
+    public HashMap<String, String> getMoves(){
         return moves;
     }
 
         public void getMoves(Piece piece, int row, int col){
-        int[] move;
+        boolean becomesKing = false;
+        String move;
 
         for(DirectionVector direction : piece.getEatingDirections()) {
             int[] tempMove = intDirectionVector.get(direction);
@@ -656,7 +686,7 @@ public class Model {
                 else if(piece.getPieceType() == PieceType.REDPIECE && row + tempMove[0] == 7)
                     becomesKing = true;
 
-                move = new int[]{row + tempMove[0], col + tempMove[1]};
+                move = (row + tempMove[0]) + "," + (col + tempMove[1]);
                 moves.put(move, 0 + "," + becomesKing);
             }
         }
@@ -805,7 +835,7 @@ public class Model {
         return !eatingPathPointer.isEmpty();
     }
 
-    public HashMap<int[], String> getAllMoves(Piece piece, int row, int col, boolean hasToEat, boolean clear){
+    public HashMap<String, String> getAllMoves(Piece piece, int row, int col, boolean hasToEat, boolean clear){
         if(clear){
             moves.clear();
             eatingPathPointer.clear();
@@ -813,7 +843,6 @@ public class Model {
 
         //eatingPossibilities = new QuaternaryTree(new int[]{-1, -1}, new int[]{-1, -1}, "", null);
        // firstCheck = true;
-        becomesKing = false;
         getEatings(piece, row, col, 0, 0, 0);
         if(!hasToEat)
             getMoves(piece, row, col);
@@ -821,12 +850,11 @@ public class Model {
         return moves;
     }
 
-    private HashMap<int[], String> getAllMovesWithOutClearing(Piece piece, int row, int col){
+    private HashMap<String, String> getAllMovesWithOutClearing(Piece piece, int row, int col){
         pieceToMove = new int[]{row, col};
         PieceType kingType = piece.getDifferentType();
         //eatingPossibilities = new QuaternaryTree(new int[]{-1, -1}, new int[]{-1, -1}, "", null);
        // firstCheck = true;
-        becomesKing = false;
         getEatings(piece, row, col, 0, 0, 0);
         getMoves(piece, row, col);
         getMoves(new Piece(kingType), row, col);
@@ -857,20 +885,28 @@ public class Model {
         int[] leftestBlackPiece;
         int[] leftestWhiteKing;
         int[] leftestBlackKing;
+        int numberOfWhitePieces = 0;
+        int numberOfWhiteKings = 0;
+        int numberOfBlackPieces = 0;
+        int numberOfBlackKings = 0;
+
+
 
         while ((leftestWhitePiece = players.getFirstPiece(whitePieces))[0] != -1) {
             getAllMoves(new Piece(PieceType.WHITEPIECE), leftestWhitePiece[0], leftestWhitePiece[1], false, false);
 
             //players.removeFirstPiece(PieceType.WHITE);
             //players.removeFirstPiece(PieceType.RED);
+            numberOfWhitePieces++;
             whitePieces = players.removeFirstPiece(whitePieces);
         }
 
         while ((leftestWhiteKing = players.getFirstPiece(whiteKings))[0] != -1) {
-            getAllMoves(new Piece(PieceType.WHITEKING), leftestWhiteKing[0], leftestWhiteKing[1], false, false);
+            getAllMoves(new King(PieceType.WHITEKING), leftestWhiteKing[0], leftestWhiteKing[1], false, false);
 
             //players.removeFirstPiece(PieceType.WHITE);
             //players.removeFirstPiece(PieceType.RED);
+            numberOfWhiteKings++;
             whiteKings = players.removeFirstPiece(whiteKings);
         }
 
@@ -879,17 +915,21 @@ public class Model {
 
             //players.removeFirstPiece(PieceType.WHITE);
             //players.removeFirstPiece(PieceType.RED);
+            numberOfBlackPieces++;
             blackPieces = players.removeFirstPiece(blackPieces);
         }
 
         while ((leftestBlackKing = players.getFirstPiece(blackKings))[0] != -1) {
-            getAllMoves(new Piece(PieceType.REDKING), leftestBlackKing[0], leftestBlackKing[1], false, false);
+            getAllMoves(new King(PieceType.REDKING), leftestBlackKing[0], leftestBlackKing[1], false, false);
 
             //players.removeFirstPiece(PieceType.WHITE);
             //players.removeFirstPiece(PieceType.RED);
+            numberOfBlackKings++;
             blackKings = players.removeFirstPiece(blackKings);
         }
 
+        if(numberOfWhitePieces == 0 && numberOfWhiteKings != 0 && numberOfBlackPieces == 0 && numberOfBlackKings != 0)
+            return true;
         //players.setPieces(PieceType.WHITE, whitePieces);
        // players.setPieces(PieceType.RED, blackPieces);
 
@@ -960,7 +1000,6 @@ public class Model {
         newModel.eatingPathPointer = new HashMap<>(eatingPathPointer);
         newModel.lastPathPos = new HashMap<>(lastPathPos);
         newModel.ai = ai;
-        newModel.becomesKing = becomesKing;
 
         //newModel.players = players.clone();
         return newModel;

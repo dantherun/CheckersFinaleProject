@@ -4,6 +4,7 @@ import javafx.scene.image.Image;
 import javafx.scene.image.ImageView;
 import javafx.scene.layout.StackPane;
 import javafx.scene.paint.Color;
+import javafx.scene.shape.Circle;
 import javafx.scene.shape.Ellipse;
 import java.io.FileInputStream;
 
@@ -44,6 +45,7 @@ public class ViewPiece extends StackPane {
         }
 
         else{
+
             Ellipse bg = new Ellipse(TILE_SIZE * 0.3125, TILE_SIZE * 0.26);
             bg.setTranslateX((TILE_SIZE - TILE_SIZE * 0.3125 * 2) / 2);
             bg.setTranslateY((TILE_SIZE - TILE_SIZE * 0.26 * 2) / 2 + TILE_SIZE * 0.07);
@@ -65,16 +67,26 @@ public class ViewPiece extends StackPane {
 //                getChildren().addAll(bg, ellipse);
 //            }
 
+            ImageView imageView = null;
             if(type == PieceType.WHITEKING || type == PieceType.REDKING){
-                ImageView imageView = createImageView("D:\\YG\\CheckersFinalProject-master\\src\\main\\java\\org\\example\\checkersfinalproject\\crown.png", 50, 50);
-                imageView.setTranslateX((TILE_SIZE - TILE_SIZE * 0.3125 * 2) / 2);
-                imageView.setTranslateY((TILE_SIZE - TILE_SIZE * 0.3125 * 2) / 2);
-                getChildren().addAll(bg, ellipse, imageView);
+                //ImageView imageView = createImageView("D:/YG/CheckersFinalProject-master/src/main/java/org/example/checkersfinalproject/crown.png", 50, 50);
+                imageView = createImageView("src\\main\\java\\org\\example\\checkersfinalproject\\crown.png", 50, 50);
+                if(imageView != null){
+                    imageView.setTranslateX((TILE_SIZE - TILE_SIZE * 0.3125 * 2) / 2);
+                    imageView.setTranslateY((TILE_SIZE - TILE_SIZE * 0.3125 * 2) / 2);
+                }
+
+                //getChildren().addAll(bg, ellipse, imageView);
+
+                ellipse.setStroke(Color.GOLD);
+                bg.setFill(Color.GOLD);
+                bg.setStroke(Color.GOLD);
             }
 
-            else{
-                getChildren().addAll(bg, ellipse);
-            }
+            getChildren().addAll(bg, ellipse);
+            if(imageView != null)
+                getChildren().addAll(imageView);
+           // }
 
 //            else{
 //                ellipse.setFill(Color.valueOf("#c40003"));
@@ -110,7 +122,6 @@ public class ViewPiece extends StackPane {
         }
 
         catch (FileNotFoundException e){
-            e.printStackTrace();
         }
 
         return imageView;

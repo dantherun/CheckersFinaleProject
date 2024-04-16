@@ -6,7 +6,7 @@ import java.util.Objects;
 import java.util.Set;
 
 public class Presenter {
-    public int TIMER_DURATION = 50000;
+    public int TIMER_DURATION = 500;
     private final IView view;
     private final Model model;
     private int player;
@@ -18,7 +18,7 @@ public class Presenter {
     private int[] cordinations;
     private int[] timeRemained;
     private Piece lastChosenPiece;
-    private HashMap<int[], String> moves;
+    private HashMap<String ,String> moves;
     private GameMode gameMode;
     private Piece playerPieceType;
     private King playerKingType;
@@ -66,7 +66,7 @@ public class Presenter {
           //  }
 
         //    else{
-                model.makeMove(lastChosenPiece, row, col);
+                model.makeMove(lastChosenPiece, row, col, moves);
                // model.makeMove(player % 2 == 0 ? PieceType.WHITEKING : PieceType.REDKING, row, col);
        //    }
 
@@ -85,6 +85,12 @@ public class Presenter {
             else{
                 // preparing for the next player's move
                 player++;
+                view.removeButton(player % 2 == 0 ? 1 : 0); // remove resign button
+                view.removeButton(player % 2 == 0 ? 3 : 2); // remove ai move button
+
+                view.addButton("Resign", 870, player % 2 == 0 ? 600 : 200, player % 2 == 0 ? 0 : 1); // add resign button
+                view.addButton("See AI Move", 812, player % 2 == 0 ? 700 : 300, player % 2 == 0 ? 2 : 3); // add ai move button
+
                 playerPieceType = new Piece(playerPieceType.getEnemyPieceType());
                 playerKingType = new King(playerPieceType.getDifferentType());
 
@@ -112,7 +118,7 @@ public class Presenter {
                         moves = model.getAllMoves(playerKingType, aiFromCord[0], aiFromCord[1], hasToEat, true);
                     }
 
-                    model.makeMove(lastChosenPiece, aiToCord[0], aiToCord[1]);
+                    model.makeMove(lastChosenPiece, aiToCord[0], aiToCord[1], moves);
 
                     if(model.hasWon(lastChosenPiece)){
                         aiWon();
@@ -145,8 +151,8 @@ public class Presenter {
 
             model.removeAllPieces(PieceType.SHADOW);
             moves = model.getAllMoves(lastChosenPiece, row, col, hasToEat, true);
-            for (int[] move : moves.keySet()) {
-                model.addPiece(PieceType.SHADOW, move[0], move[1]);
+            for (String move : moves.keySet()) {
+                model.addPiece(PieceType.SHADOW, Integer.parseInt(move.split(",")[0]), Integer.parseInt(move.split(",")[1]));
             }
 
             view.updateBoard(model.getBoard());
@@ -183,11 +189,19 @@ public class Presenter {
     public void aiWon(){
         view.stopTimer(0);
         view.stopTimer(1);
+        view.removeButton(0);
+        view.removeButton(1);
+        view.removeButton(2);
+        view.removeButton(3);
         view.askTwoAnswers("AI won. Do you want to restart the game?", "Yes", "No", "restart", true);
     }
     public void playerWon(){
         view.stopTimer(0);
         view.stopTimer(1);
+        view.removeButton(0);
+        view.removeButton(1);
+        view.removeButton(2);
+        view.removeButton(3);
         view.askTwoAnswers("Player " + (player % 2 + 1) + " Won. Do you want to restart the game?", "Yes", "No", "restart", true);
     }
 
@@ -198,7 +212,11 @@ public class Presenter {
     public void playerTie(){
         view.stopTimer(0);
         view.stopTimer(1);
-        System.out.println("tie");
+        view.removeButton(0);
+        view.removeButton(1);
+        view.removeButton(2);
+        view.removeButton(3);
+        view.askTwoAnswers("Tie. Do you want to restart the game?", "Yes", "No", "restart", true);
     }
 
 //    public void enemyTie(){
@@ -221,7 +239,7 @@ public class Presenter {
 
         else if(questionType.equals("restart")){
             if(ans.equals("Yes")){
-                initializeGame();
+                game();
 //                view.setTimer(100, 1);
             }
 
@@ -261,16 +279,25 @@ public class Presenter {
             view.updateBoard(model.getBoard());
             view.changePieceColor(lastChosenPiece.getPieceType(), aiFromCord[0], aiFromCord[1], lastChosenPiece.getPieceColor() == PieceType.WHITEPIECE ? "#696565" : "#6e2525");
         }
+
+        else if(question.equals("Resign")){
+            player++;
+
+            if(gameMode == GameMode.playerVsAi && player % 2 == 1)
+                aiWon();
+            else
+                playerWon();
+        }
     }
 
     public void updateTimer(int time){
         int[] convertedTime = convertToTime(TIMER_DURATION - time);
 
         if(player % 2 == 0)
-            view.message(String.format("%02d", convertedTime[0]) + ":" + String.format("%02d", convertedTime[1]), 980, 600, false, 4); // bottom player
+            view.message(String.format("%02d", convertedTime[0]) + ":" + String.format("%02d", convertedTime[1]), 980, 520, false, 4); // bottom player
 
         else
-            view.message(String.format("%02d", convertedTime[0]) + ":" + String.format("%02d", convertedTime[1]), 980, 200, false, 5); // top player
+            view.message(String.format("%02d", convertedTime[0]) + ":" + String.format("%02d", convertedTime[1]), 980, 120, false, 5); // top player
 
         if(TIMER_DURATION - time <= 0) {
             player++;
@@ -282,23 +309,31 @@ public class Presenter {
 
     public void initializeGame(){
         player = 0;
-        moves = new HashMap<int[], String>();
+        moves = new HashMap<>();
         hasToEat = false;
         timeRemained[0] = timeRemained[1] = 0;
         view.initializeBoard();
         view.updateBoard(model.initializeBoard());
         int[] convertedTime = convertToTime(TIMER_DURATION);
 
-        view.message("player 1", 880, 50, false, 0); // bottom player number message
-        view.message("player 2", 880, 450, false, 1); // top player number message
+        view.message("player 1", 880, 50, false, 0); // top player number message
+        view.message("player 2", 880, 450, false, 1); // bottom player number message
 
-        view.message("Timer: ", 850, 200, true, 2); // bottom timer
-        view.message("Timer: ", 850, 600, true, 3); // top timer
+        view.message("Timer: ", 850, 120, true, 2); // top timer
+        view.message("Timer: ", 850, 520, true, 3); // bottom timer
 
-        view.message(String.format("%02d", convertedTime[0]) + ":" + String.format("%02d", convertedTime[1]), 980, 600, false, 4); // bottom player time message
-        view.message(String.format("%02d", convertedTime[0]) + ":" + String.format("%02d", convertedTime[1]), 980, 200, false, 5); // top player time message
+        view.message(String.format("%02d", convertedTime[0]) + ":" + String.format("%02d", convertedTime[1]), 980, 520, false, 4); // bottom player time message
+        view.message(String.format("%02d", convertedTime[0]) + ":" + String.format("%02d", convertedTime[1]), 980, 120, false, 5); // top player time message
 
-        view.addButton("See AI Move", 812, 300);
+        view.addButton("Resign", 870, 600, 0); // bottom resign button
+        //view.addButton("Resign", 870, 200, 1); // top resign button
+
+       // view.removeButton(1);
+
+        view.addButton("See AI Move", 812, 700, 2); // bottom see ai move button
+       // view.addButton("See AI Move", 812, 300, 3); // top see ai move button
+
+       // view.removeButton(3);
 
         view.setTimer(timeRemained[0], TIMER_DURATION - timeRemained[0], 0);
     }

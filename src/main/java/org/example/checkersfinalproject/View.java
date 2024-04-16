@@ -102,8 +102,11 @@ public class View implements IView{
         visualBoard.quit();
     }
 
-    public void addButton(String message, int x, int y){
-        visualBoard.addButton(message, x, y);
+    public void addButton(String message, int x, int y, int buttonId){
+        visualBoard.addButton(message, x, y, buttonId);
+    }
+    public void removeButton(int buttonId){
+        visualBoard.removeButton(buttonId);
     }
 
     public void changePieceColor(PieceType type, int row, int col, String color){

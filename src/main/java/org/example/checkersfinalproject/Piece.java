@@ -13,21 +13,27 @@ public class Piece {
 
     protected Piece(){}
     public Piece(PieceType pieceType){
-        this.pieceType = pieceType;
-
-        differentPieceType = pieceType == PieceType.WHITEPIECE ? PieceType.WHITEKING : PieceType.REDKING;;
-
-        enemyPieces = pieceType == PieceType.WHITEPIECE ? PieceType.REDPIECE : PieceType.WHITEPIECE;
-        enemyKings = pieceType == PieceType.WHITEPIECE ? PieceType.REDKING : PieceType.WHITEKING;
-
-        if(pieceType == PieceType.WHITEPIECE){
-            directionsToMove.add(DirectionVector.northwest);
-            directionsToMove.add(DirectionVector.northeast);
+        if(pieceType == PieceType.REDKING || pieceType == PieceType.WHITEKING){
+            int a = 0;
+            a++;
         }
 
-        else{
-            directionsToMove.add(DirectionVector.southwest);
-            directionsToMove.add(DirectionVector.southeast);
+        else {
+            this.pieceType = pieceType;
+
+            differentPieceType = pieceType == PieceType.WHITEPIECE ? PieceType.WHITEKING : PieceType.REDKING;
+            ;
+
+            enemyPieces = pieceType == PieceType.WHITEPIECE ? PieceType.REDPIECE : PieceType.WHITEPIECE;
+            enemyKings = pieceType == PieceType.WHITEPIECE ? PieceType.REDKING : PieceType.WHITEKING;
+
+            if (pieceType == PieceType.WHITEPIECE) {
+                directionsToMove.add(DirectionVector.northwest);
+                directionsToMove.add(DirectionVector.northeast);
+            } else {
+                directionsToMove.add(DirectionVector.southwest);
+                directionsToMove.add(DirectionVector.southeast);
+            }
         }
     }
 

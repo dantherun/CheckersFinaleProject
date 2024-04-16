@@ -1,7 +1,7 @@
 package org.example.checkersfinalproject;
 
 public class Move {
-    private int evaluation;
+    private float evaluation;
     private int[] pieceFromCord;
     private int[] pieceToCord;
     private boolean becomesAKing;
@@ -12,9 +12,10 @@ public class Move {
         this.pieceFromCord = pieceFromCord;
         this.pieceToCord = null;
         this.becomesAKing = false;
+        this.piece = PieceType.None;
     }
 
-    public Move(int evaluation, int[] pieceFromCord, int[] pieceToCord, boolean becomesAKing, PieceType piece){
+    public Move(float evaluation, int[] pieceFromCord, int[] pieceToCord, boolean becomesAKing, PieceType piece){
         this.evaluation = evaluation;
         this.pieceFromCord = pieceFromCord;
         this.pieceToCord = pieceToCord;
@@ -22,7 +23,7 @@ public class Move {
         this.piece = piece;
     }
 
-    public int getEvaluation() {
+    public float getEvaluation() {
         return evaluation;
     }
 
@@ -34,15 +35,15 @@ public class Move {
         return pieceToCord;
     }
 
-    public void setEvaluation(int evaluation) {
+    public void setEvaluation(float evaluation) {
         this.evaluation = evaluation;
     }
 
-    public void addEvaluation(int evaluation){
+    public void addEvaluation(float evaluation){
         this.evaluation += evaluation;
     }
 
-    public void subtractEvaluation(int evaluation){
+    public void subtractEvaluation(float evaluation){
         this.evaluation -= evaluation;
     }
     public boolean becomesAKing(){

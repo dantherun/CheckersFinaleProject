@@ -1,26 +1,32 @@
 package org.example.checkersfinalproject;
 
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.Map;
-import java.util.Set;
+import java.util.*;
 
 public class AI {
-    private final int pieceEvaluation = 1;
-    private final int kingEvaluation = 2;
-    private int numberOfPieces;
-    private int numberOfEnemyPieces;
-    private int numberOfKings;
-    private int numberOfEnemyKings;
-    private boolean isWhite;
-   // private BitBoard bitBoard;
-    private Model model;
-    private String[][] board;
-    private int gameState;
+//    private final int pieceEvaluation = 1;
+//    private final int kingEvaluation = 2;
+//    private int numberOfPieces;
+//    private int numberOfEnemyPieces;
+//    private int numberOfKings;
+//    private int numberOfEnemyKings;
+//    private boolean isWhite;
+//   // private BitBoard bitBoard;
+//    private Model model;
+//    private String[][] board;
+//    private int gameState;
+    private boolean isFirst;
+    private Set<Move> defaultMoves ;
+    public static int calculations;
+    private Set<Move> asus;
     //private PieceType pieceColor;
     public AI(Model model, BitBoard bitBoard){
-        this.model = model;
+        asus = new HashSet<>();
+        //this.model = model;
    //     this.bitBoard = bitBoard;
+    }
+
+    public AI(){
+        asus = new HashSet<>();
     }
 
     public void restart(){
@@ -33,6 +39,14 @@ public class AI {
         return piece[1] == 0 || piece[1] == 7;
     }
     public Move chooseMove(Piece pieceType, Model model, boolean isResponse){
+        isFirst = true;
+        defaultMoves = getEatings(pieceType, model);
+        calculations = 0;
+        Move move = takeMove(pieceType, model, isResponse, new HashMap<>());
+        System.out.println(calculations);
+        return move;
+    }
+    private Move takeMove(Piece pieceType, Model model, boolean isResponse, HashMap<String, Object> viewdPositions){
         BitBoard board = model.getBitBoard();
         boolean hasToEat;
         Model newModel = model.clone();
@@ -47,43 +61,43 @@ public class AI {
         long kings = board.getPieces(kingType.getPieceType());
         int[] leftestPiece;
 
-        while ((leftestPiece = board.getFirstPiece(pieces))[0] != -1) {
-            //newModel.getEatings(pieceType, leftestPiece[0], leftestPiece[1], 0, 0, 0);
-            if (!(possibleMoves = newModel.getAllMoves(pieceType, leftestPiece[0], leftestPiece[1], hasToEat, true)).isEmpty()) {
-                for (Map.Entry<int[], String> move : possibleMoves.entrySet()) {
-                    evaluation = Integer.parseInt(move.getValue().split(",")[0]);
-                    moves.add(new Move(evaluation, leftestPiece, move.getKey(), Boolean.parseBoolean(move.getValue().split(",")[1]), pieceType.getPieceType()));
-                }
-            }
+        if(!isFirst)
+            moves = getEatings(pieceType, model);
 
-            pieces = board.removeFirstPiece(pieces);
-            evaluation = 0;
+        else{
+            isFirst = false;
+            moves = defaultMoves;
         }
-
-        while ((leftestPiece = board.getFirstPiece(kings))[0] != -1) {
-            if (!(possibleMoves = newModel.getAllMoves(kingType, leftestPiece[0], leftestPiece[1], hasToEat, true)).isEmpty()) {
-                for (Map.Entry<int[], String> move : possibleMoves.entrySet()) {
-                    evaluation = Integer.parseInt(move.getValue().split(",")[0]);
-                    moves.add(new Move(evaluation, leftestPiece, move.getKey(), Boolean.parseBoolean(move.getValue().split(",")[1]), kingType.getPieceType()));
-                }
-
-//                for (int[] cord : possibleMoves) {
-//                    moves.add(new Move(evaluation, leftestPiece, cord));
-//                }
-            }
-            //players.removeFirstPiece(piece);
-            kings = board.removeFirstPiece(kings);
-            evaluation = 0;
-        }
-
 
         int maxEatings = 0;
         int currentEatings = 0;
         for (Move move : moves){
+            if(defaultMoves.contains(move)){
+                int a = 0;
+                a++;
+            }
+            Piece newPiece;
+            if(move.getPiece() == PieceType.WHITEKING || move.getPiece() == PieceType.REDKING)
+                newPiece = new King(move.getPiece());
+            else
+                newPiece = new Piece(move.getPiece());
+
             Model evalModel = newModel.clone();
-            evalModel.getAllMoves(kingType, move.getPieceFromCord()[0], move.getPieceFromCord()[1], hasToEat, true);
-            evalModel.makeMove(pieceType, move.getPieceToCord()[0], move.getPieceToCord()[1]);
-            evaluate(pieceType, move, evalModel, isResponse);
+            HashMap<String, String> allMoves = evalModel.getAllMoves(newPiece, move.getPieceFromCord()[0], move.getPieceFromCord()[1], hasToEat, true);
+            evalModel.makeMove(newPiece, move.getPieceToCord()[0], move.getPieceToCord()[1], allMoves);
+            if(!viewdPositions.containsKey(evalModel.getBitBoard().getPieces(PieceType.WHITEPIECE) + "," +
+                    evalModel.getBitBoard().getPieces(PieceType.WHITEKING) + "," +
+                    evalModel.getBitBoard().getPieces(PieceType.REDPIECE) + "," +
+                    evalModel.getBitBoard().getPieces(PieceType.REDKING))){
+
+                viewdPositions.put(evalModel.getBitBoard().getPieces(PieceType.WHITEPIECE) + "," +
+                        evalModel.getBitBoard().getPieces(PieceType.WHITEKING) + "," +
+                        evalModel.getBitBoard().getPieces(PieceType.REDPIECE) + "," +
+                        evalModel.getBitBoard().getPieces(PieceType.REDKING), null);
+
+                evaluate(newPiece, move, evalModel, isResponse, viewdPositions);
+            }
+
             int a = 1;
             a++;
             //currentEatings = countEatings(move);
@@ -92,28 +106,45 @@ public class AI {
 
 
         bestMove = new Move(Integer.MIN_VALUE, null);
+        if(moves == defaultMoves){
+            int a = 0;
+            a++;
+        }
         for (Move move : moves){
             if(move.getEvaluation() > bestMove.getEvaluation())
                 bestMove = move;
         }
 
+        asus.addAll(moves);
         return bestMove;
     }
 
-    public void evaluate(Piece pieceType, Move move, Model model, boolean isResponse){
+    public void evaluate(Piece pieceType, Move move, Model model, boolean isResponse, HashMap<String, Object> viewdPositions){
         Piece newPiece = pieceType;
         boolean enemyCanEat = false;
         model.getEatingPathPointer().clear();
 
+        // checks if the move ends the game
+        if(model.hasWon(pieceType)) {
+            move.setEvaluation(Integer.MAX_VALUE);
+            return;
+        }
+
         // check if will be a king
         if(move.becomesAKing())
-            move.addEvaluation(2);
+            move.addEvaluation(3);
 
-        //checks counter attack
-//        model.getEatings(new Piece(pieceType.getEnemyPieceType()), move.getPieceToCord()[0], move.getPieceToCord()[1], 0, 0, 0);
-//        model.getEatings(new King(pieceType.getEnemyKingType()), move.getPieceToCord()[0], move.getPieceToCord()[1], 0, 0, 0);
+        int[] closestEnemy = getClosestEnemy(pieceType, model, move.getPieceFromCord()[0],  move.getPieceFromCord()[1]);
+        if((Math.abs(closestEnemy[0] - move.getPieceToCord()[0]) < Math.abs(closestEnemy[0] - move.getPieceFromCord()[0])) &&
+                (Math.abs(closestEnemy[1] - move.getPieceToCord()[1]) < Math.abs(closestEnemy[1] - move.getPieceFromCord()[1])))
+            move.addEvaluation(0.5F);
+
+        // checks if the piece will not move toward the left and right edges (to control more of the center)
+        if(move.getPieceToCord()[1] == 0 || move.getPieceToCord()[1] == 7)
+            move.subtractEvaluation(1);
+
         model.canEat(new Piece(pieceType.getEnemyPieceType()));
-        for(Map.Entry<String, long[]> eatingCord: model.getEatingPathPointer().entrySet()){
+        for(Map.Entry<String, long[]> eatingCord : model.getEatingPathPointer().entrySet()){
             int[] pieceCords = model.getBitBoard().convertToCordinates(eatingCord.getValue()[0]);
             int[] kingCords = model.getBitBoard().convertToCordinates(eatingCord.getValue()[1]);
             if(pieceCords[0] == move.getPieceToCord()[0] && pieceCords[1] == move.getPieceToCord()[1] ||
@@ -121,28 +152,45 @@ public class AI {
                 enemyCanEat = true;
         }
 
-        if(enemyCanEat || !isResponse){
-            Model newModel = model.clone();
-            Move enemyBestMove = chooseMove(new Piece(pieceType.getEnemyPieceType()), model.clone(), true);
-            move.subtractEvaluation(enemyBestMove.getEvaluation());
-        }
-
-        // checks if the piece is essential (if on the first row of the player)
-        switch (move.getPiece()){
+        switch (pieceType.getPieceType()){
             case WHITEPIECE:
-                if((move.getPieceFromCord()[0] == 7) && (move.getPieceFromCord()[1] == 2 || move.getPieceFromCord()[1] == 6)){
-                    move.subtractEvaluation(1);
-                }
+                // checks if the piece is essential (if on the first row of the player)
+                if((move.getPieceFromCord()[0] == 7) && (move.getPieceFromCord()[1] == 2 || move.getPieceFromCord()[1] == 6))
+                    move.subtractEvaluation(1.5F);
+                // checks if close to be king
+                //else if(move.getPieceFromCord()[0] == 2)
+                if(!enemyCanEat && !move.becomesAKing())
+                    move.addEvaluation(1);
                 break;
 
             case REDPIECE:
-                if((move.getPieceFromCord()[0] == 0) && (move.getPieceFromCord()[1] == 1 || move.getPieceFromCord()[1] == 5)){
-                    move.subtractEvaluation(1);
-                }
+                // checks if the piece is essential (if on the first row of the player)
+                if((move.getPieceFromCord()[0] == 0) && (move.getPieceFromCord()[1] == 1 || move.getPieceFromCord()[1] == 5))
+                    move.subtractEvaluation(1.5F);
+                // checks if close to be king
+                //else if(move.getPieceFromCord()[0] == 5)
+                if(!enemyCanEat && !move.becomesAKing())
+                    move.addEvaluation(1);
+                break;
+
+            case WHITEKING:
+                break;
+
+            case REDKING:
                 break;
         }
 
         int a = 0;
+        a++;
+        // checks counter-attack
+        if(enemyCanEat || !isResponse){
+            Model newModel = model.clone();
+            Piece piece = new Piece(pieceType.getEnemyPieceType());
+            Move enemyBestMove = takeMove(new Piece(pieceType.getEnemyPieceType()), model.clone(), true, viewdPositions);
+            move.subtractEvaluation(enemyBestMove.getEvaluation());
+        }
+
+        calculations++;
         a++;
 //        // check if will be a king
 //        if((pieceType.getPieceType() == PieceType.WHITEPIECE && move.getPieceToCord()[0] == 0) ||
@@ -162,7 +210,91 @@ public class AI {
 
     }
 
+    public Set<Move> getEatings(Piece pieceType, Model model){
+        BitBoard board = model.getBitBoard();
+        boolean hasToEat;
+        Model newModel = model.clone();
+        Set<Move> moves = new HashSet<>();
+        HashMap<String, String> possibleMoves;
+        int evaluation = 0;
+        hasToEat = newModel.canEat(pieceType);
+        Piece kingType = new King(pieceType.getDifferentType());
+        long pieces = board.getPieces(pieceType.getPieceType());
+        long kings = board.getPieces(kingType.getPieceType());
+        int[] leftestPiece;
+        int closestEnemyDistance = Integer.MAX_VALUE;
 
+        while ((leftestPiece = board.getFirstPiece(pieces))[0] != -1) {
+            if (!(possibleMoves = newModel.getAllMoves(pieceType, leftestPiece[0], leftestPiece[1], hasToEat, true)).isEmpty()) {
+                for (Map.Entry<String, String> move : possibleMoves.entrySet()) {
+                    evaluation = Integer.parseInt(move.getValue().split(",")[0]);
+                    int[] pieceToCord = new int[]{Integer.parseInt(move.getKey().split(",")[0]), Integer.parseInt(move.getKey().split(",")[1])};
+                    moves.add(new Move(evaluation, leftestPiece, pieceToCord, Boolean.parseBoolean(move.getValue().split(",")[1]), pieceType.getPieceType()));
+                }
+            }
+
+            pieces = board.removeFirstPiece(pieces);
+            evaluation = 0;
+        }
+
+        while ((leftestPiece = board.getFirstPiece(kings))[0] != -1) {
+            if (!(possibleMoves = newModel.getAllMoves(kingType, leftestPiece[0], leftestPiece[1], hasToEat, true)).isEmpty()) {
+                for (Map.Entry<String, String> move : possibleMoves.entrySet()) {
+                    evaluation = Integer.parseInt(move.getValue().split(",")[0]);
+                    int[] pieceToCord = new int[]{Integer.parseInt(move.getKey().split(",")[0]), Integer.parseInt(move.getKey().split(",")[1])};
+                    moves.add(new Move(evaluation, leftestPiece, pieceToCord, Boolean.parseBoolean(move.getValue().split(",")[1]), kingType.getPieceType()));
+                }
+
+//                for (int[] cord : possibleMoves) {
+//                    moves.add(new Move(evaluation, leftestPiece, cord));
+//                }
+            }
+            //players.removeFirstPiece(piece);
+            kings = board.removeFirstPiece(kings);
+            evaluation = 0;
+        }
+
+        return moves;
+    }
+
+    public int[] getClosestEnemy(Piece pieceType, Model model, int row, int col){
+        BitBoard board = model.getBitBoard();
+        boolean hasToEat;
+        Model newModel = model.clone();
+        Set<Move> moves = new HashSet<>();
+        HashMap<String, String> possibleMoves;
+        int evaluation = 0;
+        hasToEat = newModel.canEat(pieceType);
+        Piece enemyKingType = new King(pieceType.getEnemyKingType());
+        long enemyPieces = board.getPieces(pieceType.getEnemyPieceType());
+        long enemyKings = board.getPieces(enemyKingType.getPieceType());
+        int[] leftestPiece;
+        double closestEnemyDistance = Double.MAX_VALUE;
+        int[] closestEnemyCords = new int[2];
+        while ((leftestPiece = board.getFirstPiece(enemyPieces))[0] != -1) {
+            double distance = Math.sqrt(Math.pow(leftestPiece[0] - row, 2) + Math.pow(leftestPiece[1] - col, 2));
+            if(distance < closestEnemyDistance){
+                closestEnemyCords = leftestPiece;
+                closestEnemyDistance = distance;
+            }
+
+
+            enemyPieces = board.removeFirstPiece(enemyPieces);
+        }
+
+        while ((leftestPiece = board.getFirstPiece(enemyKings))[0] != -1) {
+            double distance = Math.sqrt(Math.pow(leftestPiece[0] - row, 2) + Math.pow(leftestPiece[1] - col, 2));
+            if(distance < closestEnemyDistance){
+                closestEnemyCords = leftestPiece;
+                closestEnemyDistance = distance;
+            }
+
+            //players.removeFirstPiece(piece);
+            enemyKings = board.removeFirstPiece(enemyKings);
+        }
+
+        return closestEnemyCords;
+    }
 
 //    public int countEatings(Move move){
 //
