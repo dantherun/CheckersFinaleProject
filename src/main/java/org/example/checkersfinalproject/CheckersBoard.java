@@ -8,6 +8,7 @@ import javafx.scene.Group;
 import javafx.scene.Parent;
 import javafx.scene.Scene;
 import javafx.scene.control.*;
+import javafx.scene.input.KeyCode;
 import javafx.scene.layout.*;
 import javafx.scene.paint.Color;
 import javafx.scene.shape.Rectangle;
@@ -198,6 +199,15 @@ public class CheckersBoard extends Application {
         //Scene scene = new Scene(boardPane);
 
 
+        boardPane.setOnKeyPressed(event -> {
+            if(event.getCode() == KeyCode.D){
+                view.onRightKeyPressed();
+            }
+
+            else if(event.getCode() == KeyCode.A){
+                view.onLeftKeyPressed();
+            }
+        });
 
         primaryStage.setTitle("CheckersBoard");
         primaryStage.setScene(boardPane);
@@ -280,7 +290,7 @@ public class CheckersBoard extends Application {
 //
 //    }
 
-    public void askTwoAnswers(String message, String ans1, String ans2, String questionType, boolean alert) {
+    public void askTwoAnswers(String message, String ans1, String ans2, String questionType, boolean alert){
         Stage secondaryStage = new Stage();
 
         Text questionText = new Text(message);
@@ -323,6 +333,16 @@ public class CheckersBoard extends Application {
         root.getChildren().addAll(questionText, buttonBox);
 
         Scene scene = new Scene(root, 1000, 700);
+        scene.setOnKeyPressed(event -> {
+            if(event.getCode() == KeyCode.RIGHT){
+                view.onRightKeyPressed();
+            }
+
+            else if(event.getCode() == KeyCode.LEFT){
+                view.onLeftKeyPressed();
+            }
+        });
+
         if(alert){
             secondaryStage.setScene(scene);
             secondaryStage.setTitle("Checkers");
@@ -350,6 +370,15 @@ public class CheckersBoard extends Application {
         root.getChildren().addAll(questionText);
 
         Scene scene = new Scene(root, 1100, 800);
+        scene.setOnKeyPressed(event -> {
+            if(event.getCode() == KeyCode.RIGHT){
+                view.onRightKeyPressed();
+            }
+
+            else if(event.getCode() == KeyCode.LEFT){
+                view.onLeftKeyPressed();
+            }
+        });
 
         primaryStage.setScene(scene);
         primaryStage.show();
@@ -386,6 +415,16 @@ public class CheckersBoard extends Application {
         root.getChildren().addAll(questionText, buttonBox);
 
         Scene scene = new Scene(root, 1100, 800);
+
+        scene.setOnKeyPressed(event -> {
+            if(event.getCode() == KeyCode.RIGHT){
+                view.onRightKeyPressed();
+            }
+
+            else if(event.getCode() == KeyCode.LEFT){
+                view.onLeftKeyPressed();
+            }
+        });
 
 //        primaryStage.setScene(scene);
 //        primaryStage.setTitle("Start Game");

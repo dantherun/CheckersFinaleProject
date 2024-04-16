@@ -134,10 +134,12 @@ public class AI {
         if(move.becomesAKing())
             move.addEvaluation(3);
 
-        int[] closestEnemy = getClosestEnemy(pieceType, model, move.getPieceFromCord()[0],  move.getPieceFromCord()[1]);
-        if((Math.abs(closestEnemy[0] - move.getPieceToCord()[0]) < Math.abs(closestEnemy[0] - move.getPieceFromCord()[0])) &&
-                (Math.abs(closestEnemy[1] - move.getPieceToCord()[1]) < Math.abs(closestEnemy[1] - move.getPieceFromCord()[1])))
-            move.addEvaluation(0.5F);
+        if(!move.willEat()){
+            int[] closestEnemy = getClosestEnemy(pieceType, model, move.getPieceFromCord()[0],  move.getPieceFromCord()[1]);
+            if((Math.abs(closestEnemy[0] - move.getPieceToCord()[0]) < Math.abs(closestEnemy[0] - move.getPieceFromCord()[0])) &&
+                    (Math.abs(closestEnemy[1] - move.getPieceToCord()[1]) < Math.abs(closestEnemy[1] - move.getPieceFromCord()[1])))
+                move.addEvaluation(0.5F);
+        }
 
         // checks if the piece will not move toward the left and right edges (to control more of the center)
         if(move.getPieceToCord()[1] == 0 || move.getPieceToCord()[1] == 7)
@@ -159,7 +161,7 @@ public class AI {
                     move.subtractEvaluation(1.5F);
                 // checks if close to be king
                 //else if(move.getPieceFromCord()[0] == 2)
-                if(!enemyCanEat && !move.becomesAKing())
+                if(!enemyCanEat && !move.becomesAKing() && !move.willEat())
                     move.addEvaluation(1);
                 break;
 
@@ -169,7 +171,7 @@ public class AI {
                     move.subtractEvaluation(1.5F);
                 // checks if close to be king
                 //else if(move.getPieceFromCord()[0] == 5)
-                if(!enemyCanEat && !move.becomesAKing())
+                if(!enemyCanEat && !move.becomesAKing() && !move.willEat())
                     move.addEvaluation(1);
                 break;
 
@@ -229,7 +231,7 @@ public class AI {
                 for (Map.Entry<String, String> move : possibleMoves.entrySet()) {
                     evaluation = Integer.parseInt(move.getValue().split(",")[0]);
                     int[] pieceToCord = new int[]{Integer.parseInt(move.getKey().split(",")[0]), Integer.parseInt(move.getKey().split(",")[1])};
-                    moves.add(new Move(evaluation, leftestPiece, pieceToCord, Boolean.parseBoolean(move.getValue().split(",")[1]), pieceType.getPieceType()));
+                    moves.add(new Move(evaluation, leftestPiece, pieceToCord, Boolean.parseBoolean(move.getValue().split(",")[1]), pieceType.getPieceType(), Boolean.parseBoolean(move.getValue().split(",")[2])));
                 }
             }
 
@@ -242,7 +244,7 @@ public class AI {
                 for (Map.Entry<String, String> move : possibleMoves.entrySet()) {
                     evaluation = Integer.parseInt(move.getValue().split(",")[0]);
                     int[] pieceToCord = new int[]{Integer.parseInt(move.getKey().split(",")[0]), Integer.parseInt(move.getKey().split(",")[1])};
-                    moves.add(new Move(evaluation, leftestPiece, pieceToCord, Boolean.parseBoolean(move.getValue().split(",")[1]), kingType.getPieceType()));
+                    moves.add(new Move(evaluation, leftestPiece, pieceToCord, Boolean.parseBoolean(move.getValue().split(",")[1]), kingType.getPieceType(), Boolean.parseBoolean(move.getValue().split(",")[2])));
                 }
 
 //                for (int[] cord : possibleMoves) {

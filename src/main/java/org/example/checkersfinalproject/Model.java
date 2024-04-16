@@ -365,13 +365,13 @@ public class Model {
 ////
 ////
 ////    }
-    public void getEatings(Piece piece, int row, int col, long piecesToEat, long kingsToEat, int totalJumpValue){
+    public void getEatings(Piece piece, int row, int col, long piecesToEat, long kingsToEat, int totalJumpValue, boolean alreadyBecameKing){
         String move;
         PieceType pieceToEat;
         long lastPiecesToEat = piecesToEat;
         long lastKingsToEat = kingsToEat;
         int lastTotalJumpValue = totalJumpValue;
-        int jumpValue = 4;
+        int jumpValue;
         boolean becomesKing = false;
 //        piecesToEat = 0;
 //        kingsToEat = 0;
@@ -398,7 +398,7 @@ public class Model {
 
                 totalJumpValue += jumpValue;
                 move = (row + tempMove[0] * 2) + "," + (col + tempMove[1] * 2);
-                moves.put(move, totalJumpValue + "," + becomesKing);
+                moves.put(move, totalJumpValue + "," + (becomesKing || alreadyBecameKing) + "," + true);
 
 
 
@@ -415,12 +415,13 @@ public class Model {
 //                }
 
 
-                getEatings(piece, row + tempMove[0] * 2, col + tempMove[1] * 2, piecesToEat, kingsToEat, totalJumpValue);
+                getEatings(piece, row + tempMove[0] * 2, col + tempMove[1] * 2, piecesToEat, kingsToEat, totalJumpValue, (becomesKing || alreadyBecameKing));
             }
 
             piecesToEat = lastPiecesToEat;
             kingsToEat = lastKingsToEat;
             totalJumpValue = lastTotalJumpValue;
+            becomesKing = false;
         }
 
         /*if(piece == PieceType.WHITEPIECE){
@@ -687,7 +688,7 @@ public class Model {
                     becomesKing = true;
 
                 move = (row + tempMove[0]) + "," + (col + tempMove[1]);
-                moves.put(move, 0 + "," + becomesKing);
+                moves.put(move, 0 + "," + becomesKing + "," + false);
             }
         }
 
@@ -809,7 +810,7 @@ public class Model {
    //     eatingPathPointer.clear();
         while((leftestPiece = players.getFirstPiece(pieces))[0] != -1){
            // firstCheck = true;
-            getEatings(piece, leftestPiece[0], leftestPiece[1], 0, 0, 0);
+            getEatings(piece, leftestPiece[0], leftestPiece[1], 0, 0, 0, false);
 //            if(hasSon(eatingPossibilities)){
 //                //players.setPieces(piece, pieces);
 //                return true;
@@ -821,7 +822,7 @@ public class Model {
 
         while((leftestPiece = players.getFirstPiece(kings))[0] != -1){
            // firstCheck = true;
-            getEatings(new King(kingType), leftestPiece[0], leftestPiece[1], 0, 0, 0);
+            getEatings(new King(kingType), leftestPiece[0], leftestPiece[1], 0, 0, 0, false);
 //            if(hasSon(eatingPossibilities)){
 //                //players.setPieces(piece, pieces);
 //                return true;
@@ -843,7 +844,7 @@ public class Model {
 
         //eatingPossibilities = new QuaternaryTree(new int[]{-1, -1}, new int[]{-1, -1}, "", null);
        // firstCheck = true;
-        getEatings(piece, row, col, 0, 0, 0);
+        getEatings(piece, row, col, 0, 0, 0, false);
         if(!hasToEat)
             getMoves(piece, row, col);
         pieceToMove = new int[]{row, col};
@@ -855,7 +856,7 @@ public class Model {
         PieceType kingType = piece.getDifferentType();
         //eatingPossibilities = new QuaternaryTree(new int[]{-1, -1}, new int[]{-1, -1}, "", null);
        // firstCheck = true;
-        getEatings(piece, row, col, 0, 0, 0);
+        getEatings(piece, row, col, 0, 0, 0, false);
         getMoves(piece, row, col);
         getMoves(new Piece(kingType), row, col);
         return moves;
@@ -928,8 +929,8 @@ public class Model {
             blackKings = players.removeFirstPiece(blackKings);
         }
 
-        if(numberOfWhitePieces == 0 && numberOfWhiteKings != 0 && numberOfBlackPieces == 0 && numberOfBlackKings != 0)
-            return true;
+//        if(numberOfWhitePieces == 0 && numberOfWhiteKings != 0 && numberOfBlackPieces == 0 && numberOfBlackKings != 0)
+//            return true;
         //players.setPieces(PieceType.WHITE, whitePieces);
        // players.setPieces(PieceType.RED, blackPieces);
 

@@ -113,4 +113,12 @@ public class View implements IView{
         visualBoard.changePieceColor(type, col, row, color);
     }
 
+    public void onRightKeyPressed(){
+        presenter.keyPressed("Right");
+    }
+
+    public void onLeftKeyPressed(){
+        presenter.keyPressed("Left");
+    }
+
 }
