@@ -445,9 +445,8 @@ public class BitBoard {
         int leftestBit = piece == PieceType.WHITEPIECE ? Long.numberOfLeadingZeros(whitePieces) : Long.numberOfLeadingZeros(redPieces);
         leftestBit = 63 - leftestBit;
         if (leftestBit != -1) {
-            int numberOfDigits = leftestBit;
-            pieceCordination[0] = 7 - numberOfDigits / 8;
-            pieceCordination[1] = 7 - numberOfDigits % 8;
+            pieceCordination[0] = 7 - leftestBit / 8;
+            pieceCordination[1] = 7 - leftestBit % 8;
             return pieceCordination;
 
         }

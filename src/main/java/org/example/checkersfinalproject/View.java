@@ -75,8 +75,12 @@ public class View implements IView{
 //        visualBoard.alertMessage(message);
 //    }
 
-    public void askTwoAnswers(String message, String ans1, String ans2, String questionType, boolean alert) {
-        visualBoard.askTwoAnswers(message, ans1, ans2, questionType, alert);
+    public void askTwoAnswers(String message, String ans1, String ans2, String questionType) {
+        visualBoard.askTwoAnswers(message, ans1, ans2, questionType);
+    }
+
+    public void askThreeAnswers(String message, String ans1, String ans2, String ans3, String questionType) {
+        visualBoard.askThreeAnswers(message, ans1, ans2, ans3, questionType);
     }
 //    public void alertAskTwoAnswers(String message, String ans1, String ans2, String questionType) {
 //        visualBoard.alertAskTwoAnswers(message, ans1, ans2, questionType);
@@ -113,12 +117,9 @@ public class View implements IView{
         visualBoard.changePieceColor(type, col, row, color);
     }
 
-    public void onRightKeyPressed(){
-        presenter.keyPressed("Right");
+    public void onKeyPressed(String keyType){
+        presenter.keyPressed(keyType);
     }
 
-    public void onLeftKeyPressed(){
-        presenter.keyPressed("Left");
-    }
 
 }

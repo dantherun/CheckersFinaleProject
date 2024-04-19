@@ -19,6 +19,7 @@ import javafx.stage.Stage;
 import javafx.util.Duration;
 
 import java.io.IOException;
+import java.security.Key;
 import java.util.ArrayList;
 
 public class CheckersBoard extends Application {
@@ -77,6 +78,7 @@ public class CheckersBoard extends Application {
     }
 
     public void createBoard(){
+        int tileNumber = 1;
         for (int y = 0; y < HEIGHT; y++) {
             for (int x = 0; x < WIDTH; x++) {
                 Tile tile = new Tile((x + y) % 2 == 0, x ,y);
@@ -94,6 +96,15 @@ public class CheckersBoard extends Application {
                 board[y][x] = tile;
                 tileGroup.getChildren().add(tile);
 
+                Text tileNumberText = new Text(String.valueOf(tileNumber));
+                tileNumberText.setFont(Font.font(50));
+                tileNumberText.setFill(Color.gray(0.3));
+
+                tileNumberText.setX(x * TILE_SIZE + ((double) TILE_SIZE) / 2 - 20);
+                tileNumberText.setY(y * TILE_SIZE + ((double) TILE_SIZE) / 2 + 20);
+
+                //tileGroup.getChildren().add(tileNumberText);
+                tileNumber++;
             }
         }
 
@@ -200,13 +211,8 @@ public class CheckersBoard extends Application {
 
 
         boardPane.setOnKeyPressed(event -> {
-            if(event.getCode() == KeyCode.D){
-                view.onRightKeyPressed();
-            }
+                view.onKeyPressed(event.getCode().getName());
 
-            else if(event.getCode() == KeyCode.A){
-                view.onLeftKeyPressed();
-            }
         });
 
         primaryStage.setTitle("CheckersBoard");
@@ -290,7 +296,7 @@ public class CheckersBoard extends Application {
 //
 //    }
 
-    public void askTwoAnswers(String message, String ans1, String ans2, String questionType, boolean alert){
+    public void askTwoAnswers(String message, String ans1, String ans2, String questionType){
         Stage secondaryStage = new Stage();
 
         Text questionText = new Text(message);
@@ -301,27 +307,17 @@ public class CheckersBoard extends Application {
 
         button1.setFont(new Font(40));
         button2.setFont(new Font(40));
-        if (alert) {
-            button1.setOnAction(event -> {
-                view.buttonPushed(message, ans1, questionType);
-                secondaryStage.close();
-            });
 
-            button2.setOnAction(event -> {
-                view.buttonPushed(message, ans2, questionType);
-                secondaryStage.close();
-            });
-        }
+        button1.setOnAction(event -> {
+            view.buttonPushed(message, ans1, questionType);
+            secondaryStage.close();
+        });
 
-        else{
-            button1.setOnAction(event -> {
-                view.buttonPushed(message, ans1, questionType);
-            });
+        button2.setOnAction(event -> {
+            view.buttonPushed(message, ans2, questionType);
+            secondaryStage.close();
+        });
 
-            button2.setOnAction(event -> {
-                view.buttonPushed(message, ans2, questionType);
-            });
-        }
 
         HBox buttonBox = new HBox(10);
         buttonBox.setAlignment(Pos.CENTER);
@@ -333,28 +329,21 @@ public class CheckersBoard extends Application {
         root.getChildren().addAll(questionText, buttonBox);
 
         Scene scene = new Scene(root, 1000, 700);
-        scene.setOnKeyPressed(event -> {
-            if(event.getCode() == KeyCode.RIGHT){
-                view.onRightKeyPressed();
-            }
-
-            else if(event.getCode() == KeyCode.LEFT){
-                view.onLeftKeyPressed();
-            }
-        });
-
-        if(alert){
-            secondaryStage.setScene(scene);
-            secondaryStage.setTitle("Checkers");
-            secondaryStage.show();
-        }
-
-        else{
-            primaryStage.setScene(scene);
-            primaryStage.setTitle("Checkers");
-            primaryStage.show();
-        }
+//        scene.setOnKeyPressed(event -> {
+//            if(event.getCode() == KeyCode.RIGHT){
+//                view.onRightKeyPressed();
+//            }
 //
+//            else if(event.getCode() == KeyCode.LEFT){
+//                view.onLeftKeyPressed();
+//            }
+//        });
+
+        secondaryStage.setScene(scene);
+        secondaryStage.setTitle("Checkers");
+        secondaryStage.show();
+
+        //
 
         // Creating a new stage for the second window
 
@@ -370,15 +359,15 @@ public class CheckersBoard extends Application {
         root.getChildren().addAll(questionText);
 
         Scene scene = new Scene(root, 1100, 800);
-        scene.setOnKeyPressed(event -> {
-            if(event.getCode() == KeyCode.RIGHT){
-                view.onRightKeyPressed();
-            }
-
-            else if(event.getCode() == KeyCode.LEFT){
-                view.onLeftKeyPressed();
-            }
-        });
+//        scene.setOnKeyPressed(event -> {
+//            if(event.getCode() == KeyCode.RIGHT){
+//                view.onRightKeyPressed();
+//            }
+//
+//            else if(event.getCode() == KeyCode.LEFT){
+//                view.onLeftKeyPressed();
+//            }
+//        });
 
         primaryStage.setScene(scene);
         primaryStage.show();
@@ -417,13 +406,13 @@ public class CheckersBoard extends Application {
         Scene scene = new Scene(root, 1100, 800);
 
         scene.setOnKeyPressed(event -> {
-            if(event.getCode() == KeyCode.RIGHT){
-                view.onRightKeyPressed();
-            }
-
-            else if(event.getCode() == KeyCode.LEFT){
-                view.onLeftKeyPressed();
-            }
+//            if(event.getCode() == KeyCode.RIGHT){
+//                view.onRightKeyPressed();
+//            }
+//
+//            else if(event.getCode() == KeyCode.LEFT){
+//                view.onLeftKeyPressed();
+//            }
         });
 
 //        primaryStage.setScene(scene);
@@ -497,4 +486,59 @@ public class CheckersBoard extends Application {
         launch();
     }
 
+    public void askThreeAnswers(String message, String ans1, String ans2, String ans3, String questionType) {
+        Stage secondaryStage = new Stage();
+
+        Text questionText = new Text(message);
+
+        questionText.setFont(new Font(40));
+        Button button1 = new Button(ans1);
+        Button button2 = new Button(ans2);
+        Button button3 = new Button(ans3);
+
+        button1.setFont(new Font(40));
+        button2.setFont(new Font(40));
+        button3.setFont(new Font(40));
+
+        button1.setOnAction(event -> {
+            view.buttonPushed(message, ans1, questionType);
+            secondaryStage.close();
+        });
+
+        button2.setOnAction(event -> {
+            view.buttonPushed(message, ans2, questionType);
+            secondaryStage.close();
+        });
+
+        button3.setOnAction(event -> {
+            view.buttonPushed(message, ans3, questionType);
+            secondaryStage.close();
+        });
+
+        HBox buttonBox = new HBox(10);
+        buttonBox.setAlignment(Pos.CENTER);
+        buttonBox.getChildren().addAll(button1, button2, button3);
+
+        VBox root = new VBox(10);
+        root.setSpacing(40);
+        root.setAlignment(Pos.CENTER);
+        root.getChildren().addAll(questionText, buttonBox);
+
+        Scene scene = new Scene(root, 1000, 700);
+//        scene.setOnKeyPressed(event -> {
+//            if(event.getCode() == KeyCode.RIGHT){
+//                view.onRightKeyPressed();
+//            }
+//
+//            else if(event.getCode() == KeyCode.LEFT){
+//                view.onLeftKeyPressed();
+//            }
+//        });
+
+        secondaryStage.setScene(scene);
+        secondaryStage.setTitle("Checkers");
+        secondaryStage.show();
+
+
+    }
 }

@@ -15,7 +15,8 @@ public interface IView {
    // public void alertAskTwoAnswers(String message, String asn1, String ans2, String restart);
     //public void message(String message, int x, int y, boolean bold, int timerId, boolean alert);
 
-    public void askTwoAnswers(String message, String asn1, String ans2, String questionType, boolean alert);
+    public void askTwoAnswers(String message, String asn1, String ans2, String questionType);
+    public void askThreeAnswers(String message, String asn1, String ans2, String ans3, String questionType);
     public void addButton(String message, int x, int y, int buttonId);
     public void removeButton(int buttonId);
     public void changePieceColor(PieceType type, int row, int col, String color);

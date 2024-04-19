@@ -1,8 +1,6 @@
 package org.example.checkersfinalproject;
 
 import java.util.HashMap;
-import java.util.HashSet;
-import java.util.Set;
 
 public class Model {
     private BitBoard players;
@@ -11,7 +9,7 @@ public class Model {
     //private QuaternaryTree eatingPossibilities;
    // private HashMap<String, QuaternaryTree> eatingPathPointer;
     private HashMap<String, long[]> eatingPathPointer;
-    private HashMap<String, QuaternaryTree> lastPathPos;
+    //private HashMap<String, QuaternaryTree> lastPathPos;
     private AI ai;
    // private boolean becomesKing;
     //private boolean firstCheck;
@@ -24,15 +22,22 @@ public class Model {
         intDirectionVector.put(DirectionVector.southwest, new int[]{1, -1});
         intDirectionVector.put(DirectionVector.southeast, new int[]{1, 1});
     }
+    public Model(Model model){
+        this.players = model.players.clone();
+        this.moves = new HashMap<>(model.moves);
+        this.pieceToMove = model.pieceToMove.clone();
+        this.eatingPathPointer = new HashMap<>(model.eatingPathPointer);
+        this.ai = model.ai.clone();
+    }
     public Model(){
       //  becomesKing = false;
-        ai = new AI(this, this.getBitBoard());
+        ai = new AI();
         players = new BitBoard();
         //eatingPossibilities = null;
         moves = new HashMap<>();
         pieceToMove = new int[2];
         eatingPathPointer = new HashMap<>();
-        lastPathPos = new HashMap<>();
+        //lastPathPos = new HashMap<>();
     }
 
     public void newGame(){
@@ -802,6 +807,7 @@ public class Model {
 
     public boolean canEat(Piece piece){
         eatingPathPointer.clear();
+        moves.clear();
         PieceType kingType = piece.getDifferentType();
         long pieces = players.getPieces(piece.getPieceType());
         long kings = players.getPieces(kingType);
@@ -983,28 +989,6 @@ public class Model {
         return moves.isEmpty();
     }
 
-    public Model clone(){
-//        private BitBoard players;
-//        private HashMap<int[], Integer> moves;
-//        private int[] pieceToMove;
-//        //private QuaternaryTree eatingPossibilities;
-//        // private HashMap<String, QuaternaryTree> eatingPathPointer;
-//        private HashMap<String, long[]> eatingPathPointer;
-//        private HashMap<String, QuaternaryTree> lastPathPos;
-//        private AI ai;
-//        private boolean becomesKing;
-//        //private boolean firstCheck;
-//        public static HashMap<DirectionVector, int[]> intDirectionVector;
-        Model newModel = new Model();
-        newModel.players = this.players.clone();
-        newModel.moves = new HashMap<>(moves);
-        newModel.eatingPathPointer = new HashMap<>(eatingPathPointer);
-        newModel.lastPathPos = new HashMap<>(lastPathPos);
-        newModel.ai = ai;
-
-        //newModel.players = players.clone();
-        return newModel;
-    }
 
 //    public boolean canBeKing(PieceType piece, int row){
 //        if(piece == PieceType.WHITEKING || piece == PieceType.REDKING)
@@ -1047,13 +1031,18 @@ public class Model {
         return eatingPathPointer;
     }
 
-
+    public HashMap<String, String> getPossibleMoves(){
+        return moves;
+    }
     public BitBoard getBitBoard(){
         return this.players;
     }
 
-    public Move getAIMove(Piece piece){
-        return ai.chooseMove(piece, this, false);
+    public Move getAIMove(Piece piece, AIDifficulty level){
+        return ai.chooseMove(piece, this, false, level);
+    }
+    public Model clone(){
+        return new Model(this);
     }
 
 }

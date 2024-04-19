@@ -1,6 +1,8 @@
 package org.example.checkersfinalproject;
 
-import java.util.*;
+import java.util.AbstractMap.SimpleEntry;
+import java.util.HashMap;
+import java.util.Stack;
 
 public class Presenter {
     public int TIMER_DURATION = 500;
@@ -12,17 +14,20 @@ public class Presenter {
     private String moveDirection;
     private int row;
     private int col;
+    private int lastRow;
+    private int lastCol;
     private int[] cordinations;
     private int[] timeRemained;
     private Piece lastChosenPiece;
-    private HashMap<String ,String> moves;
+    private HashMap<String, String> moves;
     private GameMode gameMode;
     private Piece playerPieceType;
     private King playerKingType;
     private PieceType hasPiece;
     private Move aiMove;
-    private Stack<Model> positionsBefore;
-    private Stack<Model> positionsAfter;
+    private Stack<SimpleEntry<Model, String>> positionsBefore;
+    private Stack<SimpleEntry<Model, String>> positionsAfter;
+    private AIDifficulty aiDifficulty;
 
     public Presenter(IView view){
         timeRemained = new int[2];
@@ -33,12 +38,12 @@ public class Presenter {
         lastChosenPiece = null;
         moves = new HashMap<>();
         hasToEat = false;
-        game();
+        restartGame();
     }
 
-    public void game(){
+    public void restartGame(){
         gameOn = true;
-        view.askTwoAnswers("Who do you want to play against?", "Player", "AI", "playerOrAI", true);
+        view.askTwoAnswers("Who do you want to play against?", "Player", "AI", "playerOrAI");
 
         //view.askTwoAnswers("Do you wanna start?", "Yes", "No, the game sucks");
        // while(gameOn){
@@ -55,7 +60,8 @@ public class Presenter {
     }
 
     public void getUpdateFromBoard(int col, int row){
-        if(!positionsAfter.isEmpty())
+        HashMap<Model, String> chosenPiece = new HashMap<>();
+        if(!positionsAfter.isEmpty() || !gameOn)
             return;
 
         playerPieceType = player % 2 == 0 ? new Piece(PieceType.WHITEPIECE) : new Piece(PieceType.REDPIECE);
@@ -63,18 +69,13 @@ public class Presenter {
 
         // to make the move
         if(model.hasPiece(row, col) == PieceType.SHADOW) {
-         //   if(model.canBeKing(playerType, row)){
-               // model.makeKing(playerType, row, col);
-               // playerType = player % 2 == 0 ? PieceType.WHITEKING : PieceType.REDKING;
-          //  }
+            lastRow = -1;
+            lastCol = -1;
 
-        //    else{
+            positionsBefore.add(new SimpleEntry<>(model.clone(), row + "," + col));
             model.makeMove(lastChosenPiece, row, col, moves);
-
-               // model.makeMove(player % 2 == 0 ? PieceType.WHITEKING : PieceType.REDKING, row, col);
-       //    }
-
             model.removeAllPieces(PieceType.SHADOW);
+            positionsBefore.add(new SimpleEntry<>(model.clone(), ""));
             if(gameMode == GameMode.playerVsPlayer)
                 view.stopTimer(player % 2);
 
@@ -86,16 +87,17 @@ public class Presenter {
                 playerTie();
             }
 
-            else{
 
-                positionsBefore.add(model.clone());
+            else{
                 // preparing for the next player's move
                 player++;
-                view.removeButton(player % 2 == 0 ? 1 : 0); // remove resign button
-                view.removeButton(player % 2 == 0 ? 3 : 2); // remove ai move button
+                if(gameMode != GameMode.playerVsAi){
+                    view.removeButton(player % 2 == 0 ? 1 : 0); // remove resign button
+                    view.removeButton(player % 2 == 0 ? 3 : 2); // remove ai move button
 
-                view.addButton("Resign", 870, player % 2 == 0 ? 600 : 200, player % 2 == 0 ? 0 : 1); // add resign button
-                view.addButton("See AI Move", 812, player % 2 == 0 ? 700 : 300, player % 2 == 0 ? 2 : 3); // add ai move button
+                    view.addButton("Resign", 870, player % 2 == 0 ? 600 : 200, player % 2 == 0 ? 0 : 1); // add resign button
+                    view.addButton("See AI Move", 812, player % 2 == 0 ? 700 : 300, player % 2 == 0 ? 2 : 3); // add ai move button
+                }
 
                 playerPieceType = new Piece(playerPieceType.getEnemyPieceType());
                 playerKingType = new King(playerPieceType.getDifferentType());
@@ -104,28 +106,9 @@ public class Presenter {
                 if(gameMode == GameMode.playerVsPlayer)
                     view.setTimer(timeRemained[player % 2], TIMER_DURATION - timeRemained[player % 2], player % 2);
 
+                // if the next player is AI
                 if(gameMode == GameMode.playerVsAi){
-                    aiMove = model.getAIMove(playerPieceType);
-                    while(aiMove == null || aiMove.getPieceFromCord() == null || aiMove.getPieceToCord() == null){
-                        System.out.println("asus");
-                        aiMove = model.getAIMove(playerPieceType);
-                    }
-
-                    int[] aiFromCord = aiMove.getPieceFromCord();
-                    int[] aiToCord = aiMove.getPieceToCord();
-
-                    if((hasPiece = model.hasPiece(aiFromCord[0], aiFromCord[1])) == playerPieceType.getPieceType()){
-                        lastChosenPiece = playerPieceType;
-                        moves = model.getAllMoves(playerPieceType, aiFromCord[0], aiFromCord[1], hasToEat, true);
-                    }
-
-                    else if(hasPiece == playerKingType.getPieceType()){
-                        lastChosenPiece = playerKingType;
-                        moves = model.getAllMoves(playerKingType, aiFromCord[0], aiFromCord[1], hasToEat, true);
-                    }
-
-                    model.makeMove(lastChosenPiece, aiToCord[0], aiToCord[1], moves);
-                    positionsBefore.add(model.clone());
+                    moveAI();
 
                     if(model.hasWon(lastChosenPiece)){
                         aiWon();
@@ -138,7 +121,6 @@ public class Presenter {
                     player++;
                     playerPieceType = player % 2 == 0 ? new Piece(PieceType.WHITEPIECE) : new Piece(PieceType.REDPIECE);
                     hasToEat = model.canEat(playerPieceType);
-
                 }
             }
 
@@ -147,16 +129,29 @@ public class Presenter {
 
         // to make the shadows
         else{
+            model.removeAllPieces(PieceType.SHADOW);
+            view.updateBoard(model.getBoard());
+            if(row == lastRow && col == lastCol){
+                lastRow = -1;
+                lastCol = -1;
+                return;
+            }
+
             if((hasPiece = model.hasPiece(row, col)) == playerPieceType.getPieceType())
                 lastChosenPiece = playerPieceType;
 
             else if(hasPiece == playerKingType.getPieceType())
                 lastChosenPiece = playerKingType;
 
-            else
+            else{
+                lastRow = -1;
+                lastCol = -1;
                 return;
+            }
 
-            model.removeAllPieces(PieceType.SHADOW);
+            lastRow = row;
+            lastCol = col;
+
             moves = model.getAllMoves(lastChosenPiece, row, col, hasToEat, true);
             for (String move : moves.keySet()) {
                 model.addPiece(PieceType.SHADOW, Integer.parseInt(move.split(",")[0]), Integer.parseInt(move.split(",")[1]));
@@ -164,42 +159,69 @@ public class Presenter {
 
             view.updateBoard(model.getBoard());
             view.changePieceColor(lastChosenPiece.getPieceType(), row, col, lastChosenPiece.getPieceColor() == PieceType.WHITEPIECE ? "#696565" : "#6e2525");
-
         }
 
     }
 
+    public void movePlayer(Piece pieceType){
+
+    }
+
+    public void moveAI(){
+        aiMove = model.getAIMove(playerPieceType, aiDifficulty);
+        if(aiMove == null || aiMove.getPieceFromCord() == null || aiMove.getPieceToCord() == null){
+            System.out.println("asus");
+            player++;
+            playerWon();
+            return;
+        }
+
+        int[] aiFromCord = aiMove.getPieceFromCord();
+        int[] aiToCord = aiMove.getPieceToCord();
+
+        if((hasPiece = model.hasPiece(aiFromCord[0], aiFromCord[1])) == playerPieceType.getPieceType()){
+            lastChosenPiece = playerPieceType;
+            moves = model.getAllMoves(playerPieceType, aiFromCord[0], aiFromCord[1], hasToEat, true);
+        }
+
+        else if(hasPiece == playerKingType.getPieceType()){
+            lastChosenPiece = playerKingType;
+            moves = model.getAllMoves(playerKingType, aiFromCord[0], aiFromCord[1], hasToEat, true);
+        }
+
+        model.makeMove(lastChosenPiece, aiToCord[0], aiToCord[1], moves);
+        positionsBefore.add(new SimpleEntry<>(model.clone(), ""));
+    }
+
     public void aiWon(){
-        view.stopTimer(0);
-        view.stopTimer(1);
-        view.removeButton(0);
-        view.removeButton(1);
-        view.removeButton(2);
-        view.removeButton(3);
-        view.askTwoAnswers("AI won. Do you want to restart the game?", "Yes", "No", "restart", true);
+        stopTimers();
+        removeButtons();
+        gameOn = false;
+        view.askTwoAnswers("AI won. Do you want to restart the game?", "Yes", "No", "restart");
     }
     public void playerWon(){
-        view.stopTimer(0);
-        view.stopTimer(1);
-        view.removeButton(0);
-        view.removeButton(1);
-        view.removeButton(2);
-        view.removeButton(3);
-        view.askTwoAnswers("Player " + (player % 2 + 1) + " Won. Do you want to restart the game?", "Yes", "No", "restart", true);
+        stopTimers();
+        removeButtons();
+        gameOn = false;
+        view.askTwoAnswers("Player " + (player % 2 + 1) + " Won. Do you want to restart the game?", "Yes", "No", "restart");
     }
 
-//    public void enemyWon(){
-//
-//    }
-
     public void playerTie(){
+        stopTimers();
+        removeButtons();
+        gameOn = false;
+        view.askTwoAnswers("Tie. Do you want to restart the game?", "Yes", "No", "restart");
+    }
+
+    public void stopTimers(){
         view.stopTimer(0);
         view.stopTimer(1);
+    }
+    public void removeButtons(){
         view.removeButton(0);
         view.removeButton(1);
         view.removeButton(2);
         view.removeButton(3);
-        view.askTwoAnswers("Tie. Do you want to restart the game?", "Yes", "No", "restart", true);
     }
 
 //    public void enemyTie(){
@@ -210,24 +232,54 @@ public class Presenter {
         if(questionType.equals("playerOrAI")){
             if(ans.equals("Player")){
                 gameMode = GameMode.playerVsPlayer;
-
+                initializeGame();
             }
 
             else if(ans.equals("AI")){
                 gameMode = GameMode.playerVsAi;
+                view.askThreeAnswers("Which Game Difficulty", "Easiest", "Medium", "Hardest", "difficulty");
             }
 
-            initializeGame();
+
         }
 
         else if(questionType.equals("restart")){
             if(ans.equals("Yes")){
-                game();
+                restartGame();
 //                view.setTimer(100, 1);
             }
 
             else{
                 view.quit();
+            }
+        }
+
+        else if(questionType.equals("difficulty")){
+            if(ans.equals("Easiest")){
+                aiDifficulty = AIDifficulty.EASIEST;
+            }
+
+            else if(ans.equals("Medium")){
+                aiDifficulty = AIDifficulty.MEDIUM;
+            }
+
+            else if(ans.equals("Hardest")){
+                aiDifficulty = AIDifficulty.HARDEST;
+            }
+
+            view.askTwoAnswers("Who starts?", "You", "AI", "who starts");
+        }
+
+        else if(questionType.equals("who starts")){
+            initializeGame();
+            if(ans.equals("AI")){
+                playerPieceType = new Piece(PieceType.WHITEPIECE);
+                playerKingType = new King(playerPieceType.getDifferentType());
+                moveAI();
+                player++;
+                playerPieceType = player % 2 == 0 ? new Piece(PieceType.WHITEPIECE) : new Piece(PieceType.REDPIECE);
+                hasToEat = model.canEat(playerPieceType);
+                view.updateBoard(model.getBoard());
             }
         }
 
@@ -237,10 +289,15 @@ public class Presenter {
 
             hasToEat = model.canEat(playerPieceType);
 
-            aiMove = model.getAIMove(playerPieceType);
-            while(aiMove == null){
+            aiMove = model.getAIMove(playerPieceType, AIDifficulty.HARDEST);
+//            while(aiMove == null){
+//                System.out.println("asus");
+//                aiMove = model.getAIMove(playerPieceType, aiDifficulty);
+//            }
+
+            if(aiMove == null || aiMove.getPieceFromCord() == null || aiMove.getPieceToCord() == null){
                 System.out.println("asus");
-                aiMove = model.getAIMove(playerPieceType);
+                return;
             }
 
             int[] aiFromCord = aiMove.getPieceFromCord();
@@ -274,30 +331,59 @@ public class Presenter {
     }
 
     public void keyPressed(String key){
-        if(key.equals("Right")){
-            changePositions(PositionType.forward);
+        if(key.equals("D")){
+            changePositions(PositionType.forward, false, null);
         }
 
-        else if(key.equals("Left")){
-            changePositions(PositionType.backward);
+        else if(key.equals("A")){
+            changePositions(PositionType.backward, false, null);
+        }
+
+        else if(key.equals("W")){
+            changePositions(PositionType.forward, true, null);
+        }
+
+        else if(key.equals("S")){
+            changePositions(PositionType.backward, true, null);
         }
     }
 
-    public void changePositions(PositionType positionType){
-        Model position = null;
+    public void changePositions(PositionType positionType, boolean allTheWay, Model position){
+
+        SimpleEntry<Model, String> info = null;
         if(positionType == PositionType.forward && !positionsAfter.isEmpty()){
             positionsBefore.add(positionsAfter.pop());
-            position = positionsBefore.peek();
+            info = positionsBefore.peek();
+            position = info.getKey();
+
+            if(allTheWay)
+                changePositions(PositionType.forward, true, position);
         }
 
         else if(positionType == PositionType.backward && positionsBefore.size() > 1) {
             positionsAfter.add(positionsBefore.pop());
-            if(!positionsBefore.isEmpty())
-                position = positionsBefore.peek();
+            if(!positionsBefore.isEmpty()){
+                info = positionsBefore.peek();
+                position = info.getKey();
+            }
+
+
+            if(allTheWay)
+                changePositions(PositionType.backward, true, position);
         }
 
-        if(position != null)
+        else{
+            allTheWay = false;
+        }
+
+        if(position != null && !allTheWay){
             view.updateBoard(position.getBoard());
+            //view.changePieceColor(lastChosenPiece.getPieceType(), row, col, lastChosenPiece.getPieceColor() == PieceType.WHITEPIECE ? "#696565" : "#6e2525");
+//            if(!info.getValue().isEmpty()){
+//                String[] cordinations = info.getValue().split(",");
+//                view.changePieceColor(position.getPiece(Integer.parseInt(cordinations[0]), Integer.parseInt(cordinations[1])).getPieceType(), Integer.parseInt(cordinations[0]), Integer.parseInt(cordinations[1]), "#696565");
+//            }
+        }
     }
 
     public void updateTimer(int time){
@@ -318,6 +404,7 @@ public class Presenter {
     }
 
     public void initializeGame(){
+        gameOn = true;
         player = 0;
         moves = new HashMap<>();
         hasToEat = false;
@@ -349,7 +436,7 @@ public class Presenter {
        // view.removeButton(3);
 
         view.setTimer(timeRemained[0], TIMER_DURATION - timeRemained[0], 0);
-        positionsBefore.add(model.clone());
+        positionsBefore.add(new SimpleEntry<>(model.clone(), ""));
     }
     // returns time in minutes and seconds
     public int[] convertToTime(int time){
