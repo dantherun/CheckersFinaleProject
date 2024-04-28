@@ -78,6 +78,7 @@ public class CheckersBoard extends Application {
     }
 
     public void createBoard(){
+        tileGroup.getChildren().clear();
         int tileNumber = 1;
         for (int y = 0; y < HEIGHT; y++) {
             for (int x = 0; x < WIDTH; x++) {

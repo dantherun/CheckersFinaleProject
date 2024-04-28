@@ -131,6 +131,7 @@ public class Presenter {
         else{
             model.removeAllPieces(PieceType.SHADOW);
             view.updateBoard(model.getBoard());
+
             if(row == lastRow && col == lastCol){
                 lastRow = -1;
                 lastCol = -1;

@@ -149,7 +149,7 @@ public class AI {
 
         // check if will be a king
         if(move.becomesAKing())
-            move.addEvaluation(3);
+            move.addEvaluation(3.5F);
 
         if(!move.willEat() && !enemyCanEat){
             int[] closestEnemy = getClosestEnemy(pieceType, model, move.getPieceFromCord()[0],  move.getPieceFromCord()[1]);
@@ -192,9 +192,6 @@ public class AI {
                 break;
         }
 
-        int a = 0;
-        a++;
-
         // checks counter-attack (only if not the easiest level)
         if((level == AIDifficulty.HARDEST && (enemyCanEat || !isResponse)) || (level == AIDifficulty.MEDIUM && enemyCanEat)){
             Model newModel = model.clone();
@@ -203,7 +200,6 @@ public class AI {
             move.subtractEvaluation(enemyBestMove.getEvaluation());
         }
 
-        a++;
 //        // check if will be a king
 //        if((pieceType.getPieceType() == PieceType.WHITEPIECE && move.getPieceToCord()[0] == 0) ||
 //                (pieceType.getPieceType() == PieceType.REDPIECE && move.getPieceToCord()[0] == 7)){
