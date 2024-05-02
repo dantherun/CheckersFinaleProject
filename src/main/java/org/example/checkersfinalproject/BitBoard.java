@@ -8,7 +8,7 @@ public class BitBoard {
     private long redPieces;
     private long whiteKings;
     private long redKings;
-    private long shadows;
+    private long shadows; // the shadow pieces that are used to show the possible moves of a piece
   //  private long mask;
 
     public BitBoard(){
@@ -40,50 +40,12 @@ public class BitBoard {
         }
     }
 
-    //public long getPieces()
-//    public long enemyNeighbors(PieceType piece, int row, int col, DirectionVector direct){
-//        mask = 1;
-//        long enemyToCheck;
-//        if(piece == PieceType.WHITEPIECE || piece == PieceType.WHITEKING)
-//            enemyToCheck = redPieces | redKings;
-//        else
-//            enemyToCheck = whitePieces | whiteKings;
-//
-//        if(direct.getDirectionType() < 0)
-//            return (((mask << 8 *  row) << col) >>> -direct.getDirectionType()) & enemyToCheck;
-//
-//        return (((mask << 8 * row) << col) << direct.getDirectionType()) & enemyToCheck;
-//    }
-
-//    public long getAllPieces(long playerPieces, long enemyPieces){
-//        return playerPieces | enemyPieces;
-//    }
-
     public PieceType canEat(Piece piece, int row, int col, DirectionVector direct){
         long mask = (1L << 8 * row) << col;
         int direction = direct.getDirectionType();
-        long playerToCheck;
-        long enemyToCheck;
         PieceType pieceOtherType;
         PieceType pieceAfter;
-//        if(piece == PieceType.WHITEPIECE || piece == PieceType.WHITEKING)
-//            pieceOtherType = piece == PieceType.WHITEPIECE ? PieceType.WHITEKING : PieceType.WHITEPIECE;
-//
-//
-//        else
-//            pieceOtherType = piece == PieceType.REDPIECE ? PieceType.REDKING : PieceType.REDPIECE;
-
         pieceOtherType = piece.getDifferentType();
-
-//        else if(piece == PieceType.WHITEKING){
-//            playerToCheck = whiteKings;
-//            enemyToCheck = redPieces | redKings;
-//        }
-//
-//        else{
-//            playerToCheck = redKings;
-//            enemyToCheck = whitePieces | whiteKings;
-//        }
 
         pieceAfter = pieceAfter(row, col, direct);
         if(pieceAfter == PieceType.None || pieceAfter == piece.getPieceType() || pieceAfter == pieceOtherType)
@@ -104,21 +66,6 @@ public class BitBoard {
     public PieceType pieceAfter(int row, int col, DirectionVector direct){
         long mask = (1L << 8 * row) << col;
         int direction = direct.getDirectionType();
-        long playerPiece;
-        long playerKing;
-        long enemyPiece;
-        long enemyKing;
-        PieceType pieceType;
-
-//        else if(piece == PieceType.WHITEKING){
-//            playerToCheck = whiteKings;
-//            enemyToCheck = redPieces | redKings;
-//        }
-//
-//        else{
-//            playerToCheck = redKings;
-//            enemyToCheck = whitePieces | whiteKings;
-//        }
 
         if(direction < 0)
             mask >>>= -direction;
@@ -136,19 +83,6 @@ public class BitBoard {
     public boolean canMove(int row, int col, DirectionVector direct){
         long mask = (1L << 8 * row) << col;
         int direction = direct.getDirectionType();
-        long playerToCheck;
-        long enemyToCheck;
-
-
-//        else if(piece == PieceType.WHITEKING){
-//            playerToCheck = whiteKings;
-//            enemyToCheck = redPieces | redKings;
-//        }
-//
-//        else{
-//            playerToCheck = redKings;
-//            enemyToCheck = whitePieces | whiteKings;
-//        }
 
         if(direction < 0)
             mask >>>= -direction;
@@ -158,63 +92,6 @@ public class BitBoard {
 
         return ((whitePieces | whiteKings | redPieces | redKings) & mask) == 0;
     }
-    //returns moveType.move if can move, returns moveType.eat if can eat, returns moveType.none if neither
-//    public MoveType canMoveOrEat(PieceType piece, int row, int col, DirectionVector direct){
-//        long mask = (1L << 8 * row) << col;
-//        int direction = direct.getDirectionType();
-//        long playerToCheck;
-//        long enemyToCheck;
-//        if(piece == PieceType.WHITEPIECE || piece == PieceType.WHITEKING){
-//            playerToCheck = whitePieces | whiteKings;
-//            enemyToCheck = redPieces | redKings;
-//        }
-//
-//        else {
-//            playerToCheck = redPieces | redKings;
-//            enemyToCheck = whitePieces | whiteKings;
-//        }
-//
-////        else if(piece == PieceType.WHITEKING){
-////            playerToCheck = whiteKings;
-////            enemyToCheck = redPieces | redKings;
-////        }
-////
-////        else{
-////            playerToCheck = redKings;
-////            enemyToCheck = whitePieces | whiteKings;
-////        }
-//
-//        if(direction < 0)
-//            mask >>>= -direction;
-//
-//        else
-//            mask <<= direction;
-//
-//        if(direction < 0)
-//        {
-//            if((enemyToCheck & mask) != 0){
-//                if(((enemyToCheck | playerToCheck) & (mask >>> -direction)) == 0)
-//                    return MoveType.eat;
-//                else return MoveType.none;
-//            }
-//
-//            else if((playerToCheck & mask) != 0)
-//                return MoveType.none;
-//
-//            return MoveType.move;
-//        }
-//
-//        if((enemyToCheck & mask) != 0){
-//            if(((enemyToCheck | playerToCheck) & (mask << direction)) == 0)
-//                return MoveType.eat;
-//            else return MoveType.none;
-//        }
-//
-//        else if((playerToCheck & mask) != 0)
-//            return MoveType.none;
-//
-//        return MoveType.move;
-//    }
 
     public void movePieces(PieceType piece, int row0, int col0, int row, int col){
         long mask = (1L << 8 * row0) << col0;
@@ -244,86 +121,6 @@ public class BitBoard {
         }
 
     }
-//    public void movePieces(PieceType piece, int row, int col, DirectionVector direct){
-//        mask = (1L << 8 * row) << col;
-//
-//        if(direct.getDirectionType() < 0) {
-//            if (piece == PieceType.WHITEPIECE) {
-//                whitePieces = whitePieces ^ mask;
-//                mask >>>= -direct.getDirectionType();
-//                whitePieces = whitePieces | mask;
-//            }
-//
-//            else if(piece == PieceType.REDPIECE){
-//                redPieces = redPieces ^ mask;
-//                mask >>>= -direct.getDirectionType();
-//                redPieces= redPieces | mask;
-//            }
-//
-//            else if(piece == PieceType.WHITEKING){
-//                whiteKings = whiteKings ^ mask;
-//                mask >>>= -direct.getDirectionType();
-//                whiteKings = whiteKings | mask;
-//            }
-//
-//            else {
-//
-//            }
-//        }
-//
-//        else{
-//            if (piece == PieceType.WHITEPIECE) {
-//                whitePieces = whitePieces ^ mask;
-//                mask <<= direct.getDirectionType();
-//                whitePieces = whitePieces | mask;
-//            }
-//
-//            else {
-//                redPieces = redPieces ^ mask;
-//                mask <<= direct.getDirectionType();
-//                redPieces = redPieces | mask;
-//            }
-//        }
-//
-//    }
-
-//    public void eatPieces(PieceType piece, int row, int col, DirectionVector direct){
-//        mask = (1L << 8 * row) << col;
-//
-//        if(direct.getDirectionType() < 0)
-//            mask >>>= -direct.getDirectionType();
-//
-//        else
-//            mask <<= direct.getDirectionType();
-//
-//        if(direct.getDirectionType() < 0){
-//            if(piece == PieceType.WHITEPIECE){
-//                whitePieces = whitePieces ^ mask;
-//                redPieces = redPieces ^ (mask >>> -direct.getDirectionType());
-//                whitePieces = whitePieces | (mask >>> -(direct.getDirectionType() * 2));
-//            }
-//
-//            else {
-//                redPieces = redPieces ^ mask;
-//                whitePieces = whitePieces ^ (mask >>> -direct.getDirectionType());
-//                redPieces = redPieces | (mask >>> -(direct.getDirectionType() * 2));
-//            }
-//
-//            return;
-//        }
-//
-//        if(piece == PieceType.WHITEPIECE){
-//            whitePieces = whitePieces ^ mask;
-//            redPieces = redPieces ^ (mask << direct.getDirectionType());
-//            whitePieces = whitePieces | (mask << (direct.getDirectionType() * 2));
-//        }
-//
-//        else {
-//            redPieces = redPieces ^ mask;
-//            whitePieces = whitePieces ^ (mask << direct.getDirectionType());
-//            redPieces = redPieces | (mask << (direct.getDirectionType() * 2));
-//        }
-//    }
 
     // returns the piece type
     public PieceType hasPiece(int row, int col){
@@ -467,17 +264,6 @@ public class BitBoard {
         return pieceCordination;
     }
 
-//    public void removeFirstPiece(PieceType piece){
-//        long highestOneBit = piece == PieceType.WHITEPIECE ? Long.highestOneBit(whitePieces) : Long.highestOneBit(redPieces);
-//
-//        if (piece == PieceType.WHITEPIECE)
-//            whitePieces = whitePieces ^ highestOneBit;
-//
-//        else
-//            redPieces = redPieces ^ highestOneBit;
-//
-//    }
-
     public long removeFirstPiece(long pieces){
         long highestOneBit = Long.highestOneBit(pieces);
         pieces = pieces ^ highestOneBit;
@@ -532,33 +318,7 @@ public class BitBoard {
         return cords;
     }
 
-//    public void setPieces(PieceType piece, long newPieces){
-//        if(piece == PieceType.WHITEPIECE)
-//            whitePieces = newPieces;
-//        else
-//            redPieces = newPieces;
-//    }
-
-//    public void makeKing(PieceType piece, int row, int col){
-//        mask = (1L << 8 * row) << col;
-//        if(piece == PieceType.WHITEPIECE)
-//            whiteKings = whiteKings | mask;
-//
-//        else
-//            redKings = redKings | mask;
-//
-//    }
-
     public BitBoard clone(){
-
-//        BitBoard newBoard = new BitBoard();
-//        newBoard.whitePieces = this.whitePieces;
-//        newBoard.redPieces = this.redPieces;
-//        newBoard.whiteKings = this.whiteKings;
-//        newBoard.redKings = this.redKings;
-//        newBoard.shadows = this.shadows;
-        //newBoard.mask = this.mask;
-
         return new BitBoard(this);
     }
 }

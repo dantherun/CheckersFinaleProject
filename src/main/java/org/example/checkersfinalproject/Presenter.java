@@ -60,7 +60,6 @@ public class Presenter {
     }
 
     public void getUpdateFromBoard(int col, int row){
-        HashMap<Model, String> chosenPiece = new HashMap<>();
         if(!positionsAfter.isEmpty() || !gameOn)
             return;
 
@@ -72,10 +71,10 @@ public class Presenter {
             lastRow = -1;
             lastCol = -1;
 
-            positionsBefore.add(new SimpleEntry<>(model.clone(), row + "," + col));
+            positionsBefore.add(new SimpleEntry<>(model.clone(), row + "," + col + ":" + player));
             model.makeMove(lastChosenPiece, row, col, moves);
             model.removeAllPieces(PieceType.SHADOW);
-            positionsBefore.add(new SimpleEntry<>(model.clone(), ""));
+            positionsBefore.add(new SimpleEntry<>(model.clone(), ":" + player));
             if(gameMode == GameMode.playerVsPlayer)
                 view.stopTimer(player % 2);
 
@@ -191,7 +190,7 @@ public class Presenter {
         }
 
         model.makeMove(lastChosenPiece, aiToCord[0], aiToCord[1], moves);
-        positionsBefore.add(new SimpleEntry<>(model.clone(), ""));
+        positionsBefore.add(new SimpleEntry<>(model.clone(), ":" + player));
     }
 
     public void aiWon(){
@@ -285,12 +284,24 @@ public class Presenter {
         }
 
         else if(question.equals("See AI Move")){
-            playerPieceType = player % 2 == 0 ? new Piece(PieceType.WHITEPIECE) : new Piece(PieceType.REDPIECE);
+            Model modelToDo;
+            if(!positionsAfter.isEmpty())
+                modelToDo = positionsBefore.peek().getKey().clone();
+            else
+                modelToDo = model;
+
+            int playerTurn;
+            if(!positionsAfter.isEmpty())
+                playerTurn = Integer.parseInt(positionsBefore.peek().getValue().split(":")[1]);
+            else
+                playerTurn = player;
+
+            playerPieceType = playerTurn % 2 == 0 ? new Piece(PieceType.WHITEPIECE) : new Piece(PieceType.REDPIECE);
             playerKingType = new King(playerPieceType.getDifferentType());
 
-            hasToEat = model.canEat(playerPieceType);
+            hasToEat = modelToDo.canEat(playerPieceType);
 
-            aiMove = model.getAIMove(playerPieceType, AIDifficulty.HARDEST);
+            aiMove = modelToDo.getAIMove(playerPieceType, AIDifficulty.HARDEST);
 //            while(aiMove == null){
 //                System.out.println("asus");
 //                aiMove = model.getAIMove(playerPieceType, aiDifficulty);
@@ -304,7 +315,7 @@ public class Presenter {
             int[] aiFromCord = aiMove.getPieceFromCord();
             int[] aiToCord = aiMove.getPieceToCord();
 
-            if((hasPiece = model.hasPiece(aiFromCord[0], aiFromCord[1])) == playerPieceType.getPieceType())
+            if((hasPiece = modelToDo.hasPiece(aiFromCord[0], aiFromCord[1])) == playerPieceType.getPieceType())
                 lastChosenPiece = playerPieceType;
 
             else if(hasPiece == playerKingType.getPieceType())
@@ -313,11 +324,11 @@ public class Presenter {
             else
                 return;
 
-            model.removeAllPieces(PieceType.SHADOW);
-            moves = model.getAllMoves(lastChosenPiece, aiFromCord[0], aiFromCord[1], hasToEat, true);
-            model.addPiece(PieceType.SHADOW, aiToCord[0], aiToCord[1]);
+            modelToDo.removeAllPieces(PieceType.SHADOW);
+            moves = modelToDo.getAllMoves(lastChosenPiece, aiFromCord[0], aiFromCord[1], hasToEat, true);
+            modelToDo.addPiece(PieceType.SHADOW, aiToCord[0], aiToCord[1]);
 
-            view.updateBoard(model.getBoard());
+            view.updateBoard(modelToDo.getBoard());
             view.changePieceColor(lastChosenPiece.getPieceType(), aiFromCord[0], aiFromCord[1], lastChosenPiece.getPieceColor() == PieceType.WHITEPIECE ? "#696565" : "#6e2525");
         }
 
@@ -437,7 +448,7 @@ public class Presenter {
        // view.removeButton(3);
 
         view.setTimer(timeRemained[0], TIMER_DURATION - timeRemained[0], 0);
-        positionsBefore.add(new SimpleEntry<>(model.clone(), ""));
+        positionsBefore.add(new SimpleEntry<>(model.clone(), ":" + player));
     }
     // returns time in minutes and seconds
     public int[] convertToTime(int time){
