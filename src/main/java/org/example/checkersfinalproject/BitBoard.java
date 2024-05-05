@@ -8,7 +8,9 @@ public class BitBoard {
     private long redPieces;
     private long whiteKings;
     private long redKings;
-    private long shadows; // the shadow pieces that are used to show the possible moves of a piece
+
+    // the shadow pieces that are used to show the possible moves of a piece
+    private long shadows;
   //  private long mask;
 
     public BitBoard(){
@@ -30,14 +32,9 @@ public class BitBoard {
         whiteKings = 0;
         redKings = 0;
         shadows = 0;
-        for (int row = 0; row < 8; row++) {
-            for (int col = 0; col < 8; col++) {
-                if(row < 3 && (row + col) % 2 != 0)
-                    whitePieces |= (mask << 8 * row) << col;
-                else if(row >= 5 && (row + col) % 2 != 0)
-                    redPieces |= (mask << 8 * row) << col;
-            }
-        }
+
+        whitePieces = 11163050L;
+        redPieces = 6172839697753047040L;
     }
 
     public PieceType canEat(Piece piece, int row, int col, DirectionVector direct){

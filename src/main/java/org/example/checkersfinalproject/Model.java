@@ -3,22 +3,37 @@ package org.example.checkersfinalproject;
 import java.util.HashMap;
 
 public class Model {
-    private BitBoard bitBoard; // the bitboard
+    // the bitboard
+    private BitBoard bitBoard;
 
     // A list of moves that have information about the move.
-    // Information like the number of jumps, if the piece became a king, and if it was an eating move or not
+    // Information like the number of jumps, if the piece became a king,
+    // and if it was an eating move or not
     private HashMap<String, String> moves;
-    private int[] pieceToMove; // last piece that the model checked
-    private HashMap<String, long[]> eatingPathPointer; // a list of moves that includes the ate pieces
-    private AI ai; // class that handles the AI
-    public static HashMap<DirectionVector, int[]> intDirectionVector; // a direction vector array
+
+    // last piece that the model checked
+    private int[] pieceToMove;
+
+    // a list of moves that includes the ate pieces cordinations
+    private HashMap<String, long[]> eatingPathPointer;
+
+    // class that handles the AI
+    private AI ai;
+
+
+    // a direction vector array
+    public static HashMap<DirectionVector, int[]> intDirectionVector;
 
     static {
         intDirectionVector = new HashMap<>();
-        intDirectionVector.put(DirectionVector.northwest, new int[]{-1, -1}); // north-west
-        intDirectionVector.put(DirectionVector.northeast, new int[]{-1, 1}); // north-east
-        intDirectionVector.put(DirectionVector.southwest, new int[]{1, -1}); // south-west
-        intDirectionVector.put(DirectionVector.southeast, new int[]{1, 1}); // south-east
+        // north-west
+        intDirectionVector.put(DirectionVector.northwest, new int[]{-1, -1});
+        // north-east
+        intDirectionVector.put(DirectionVector.northeast, new int[]{-1, 1});
+        // south-west
+        intDirectionVector.put(DirectionVector.southwest, new int[]{1, -1});
+        // south-east
+        intDirectionVector.put(DirectionVector.southeast, new int[]{1, 1});
     }
     public Model(Model model){
         this.bitBoard = model.bitBoard.clone();
@@ -36,6 +51,7 @@ public class Model {
     }
 
     public PieceType[][] initializeBoard(){
+        ai.newGame();
         bitBoard.initialize();
         return bitBoard.convertToMatrix();
     }
@@ -74,12 +90,12 @@ public class Model {
         bitBoard.removeAllPieces(piece);
     }
 
-    public void makeMove(Piece piece, int row0, int col0, int row, int col, boolean becemesAKing){
+    public void makeMove(Piece piece, int row0, int col0, int row, int col, boolean becomesAKing){
         PieceType enemyPiece;
 
         enemyPiece = piece.getEnemyPieceType();
 
-        if(becemesAKing){
+        if(becomesAKing){
             bitBoard.removePiece(piece.getPieceType(), 7 - row0, 7 - col0);
             piece = new King(piece.getDifferentType());
             bitBoard.addPiece(piece.getPieceType(), 7 - row0, 7 - col0);

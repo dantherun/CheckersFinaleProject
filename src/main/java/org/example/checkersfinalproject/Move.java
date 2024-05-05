@@ -8,6 +8,15 @@ public class Move {
     private boolean willEat;
     private PieceType piece;
 
+
+    public Move(int[] pieceFromCord, int[] pieceToCord){
+        this.evaluation = 0;
+        this.pieceFromCord = pieceFromCord;
+        this.pieceToCord = pieceToCord;
+        this.becomesAKing = false;
+        this.piece = PieceType.None;
+    }
+
     public Move(int evaluation, int[] pieceFromCord){
         this.evaluation = evaluation;
         this.pieceFromCord = pieceFromCord;

@@ -1,15 +1,70 @@
 package org.example.checkersfinalproject;
 
+import java.io.File;
 import java.util.*;
 
 public class AI {
-
 
     private boolean isFirst; // checks if this is the first time that the ai checks the board position
 
     public int numberOfRecursion;// counts the number of recursions that the evaluation function did
 
     public static int maxNumberOfRecursion; // the maximum number of recursions that the evaluation function did
+    private boolean openingStage; // checks if the game is in the opening stage
+
+    public static HashMap<String, Move> openingList = new HashMap<>(); // the list of the openings of the opponent
+    static {
+        try{
+            Model model = new Model();
+            model.initializeBoard();
+            File openingListFile = new File("src/main/java/org/example/checkersfinalproject/openings.txt");
+            Scanner scanner = new Scanner(openingListFile);
+            //float evaluation, int[] pieceFromCord, int[] pieceToCord, boolean becomesAKing, PieceType piece, boolean willEat
+
+            String line = scanner.nextLine();
+
+            int[] aiFromCords = new int[]{Integer.parseInt(line.split(",")[0]), Integer.parseInt(line.split(",")[1])};
+            int[] aiToCords = new int[]{Integer.parseInt(line.split(",")[2]), Integer.parseInt(line.split(",")[3])};
+
+            openingList.put(11163050L + "," + 6172839697753047040L, new Move(aiFromCords, aiToCords));
+            model.makeMove(new Piece(PieceType.WHITEPIECE), aiFromCords[0], aiFromCords[1], aiToCords[0], aiToCords[1], false);
+
+            String[] moveAndResponse = scanner.nextLine().split(";");
+
+            addOpening(moveAndResponse, new Piece(PieceType.REDPIECE), model);
+
+            // add every opponent's opening move to the opening list
+            while(scanner.hasNextLine()){
+                model.initializeBoard();
+                moveAndResponse = scanner.nextLine().split(";");
+
+                addOpening(moveAndResponse, new Piece(PieceType.WHITEPIECE), model);
+            }
+
+            scanner.close();
+        }
+
+        catch (Exception e){
+            openingList = null;
+            System.out.println("Error: " + e.getMessage());
+        }
+    }
+
+    public static void addOpening(String[] moveAndResponse, Piece piece, Model model){
+        for (int i = 0; i < moveAndResponse.length; i+=2) {
+            String info = moveAndResponse[i];
+            int[] enemyFromCords = new int[]{Integer.parseInt(info.split(",")[0]), Integer.parseInt(info.split(",")[1])};
+            int[] enemyToCords = new int[]{Integer.parseInt(info.split(",")[2]), Integer.parseInt(info.split(",")[3])};
+
+            info = moveAndResponse[i + 1];
+            int[] aiFromCords = new int[]{Integer.parseInt(info.split(",")[0]), Integer.parseInt(info.split(",")[1])};
+            int[] aiToCords = new int[]{Integer.parseInt(info.split(",")[2]), Integer.parseInt(info.split(",")[3])};
+
+            model.makeMove(piece, enemyFromCords[0], enemyFromCords[1], enemyToCords[0], enemyToCords[1], false);
+            openingList.put(model.getBitBoard().getPieces(PieceType.WHITEPIECE) + "," + model.getBitBoard().getPieces(PieceType.REDPIECE), new Move(aiFromCords, aiToCords));
+            model.makeMove(new Piece(piece.getEnemyPieceType()), aiFromCords[0], aiFromCords[1], aiToCords[0], aiToCords[1], false);
+        }
+    }
     public AI(AI other){
         isFirst = other.isFirst;
         numberOfRecursion = other.numberOfRecursion;
@@ -22,14 +77,33 @@ public class AI {
 
     }
 
+    public void newGame(){
+        openingStage = true;
+    }
+
     public boolean isSidePiece(int[] piece){
         return piece[1] == 0 || piece[1] == 7;
     }
 
-    // this function exists only to be used in the tests and to call the private function takeMove
+    // this function calls the takeMove function and returns the best move.
+    // It also checks if the game is in the opening stage and if it is, it will return the opening move
     public Move chooseMove(Piece pieceType, Model model, boolean isResponse, AIDifficulty level){
         isFirst = true;
         numberOfRecursion = 0;
+
+
+        // checks if the game is in the opening stage
+        if(openingStage){
+            // checks if the opening list has the current position
+            if(openingList.containsKey(model.getBitBoard().getPieces(PieceType.WHITEPIECE) + "," + model.getBitBoard().getPieces(PieceType.REDPIECE)))
+                // returns the opening move
+                return openingList.get(model.getBitBoard().getPieces(PieceType.WHITEPIECE) + "," + model.getBitBoard().getPieces(PieceType.REDPIECE));
+
+            // if the opening list does not have the current position, then the game is not in the opening stage
+            else
+                openingStage = false;
+        }
+
         Move move = takeMove(pieceType, model, isResponse, new HashMap<>(), level);
 
         // --------------------------------- this part for debugging
@@ -37,8 +111,8 @@ public class AI {
         if(numberOfRecursion > maxNumberOfRecursion)
             maxNumberOfRecursion = numberOfRecursion;
         System.out.printf("Max number of recursions: %d\n", maxNumberOfRecursion);
-
         // --------------------------------- end of debugging part
+
         return move;
     }
 

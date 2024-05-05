@@ -25,7 +25,11 @@ public class Presenter {
     private King playerKingType;
     private PieceType hasPiece;
     private Move aiMove;
+
+    // the positions before the current position
     private Stack<SimpleEntry<Model, String>> positionsBefore;
+
+    // the positions after the current position
     private Stack<SimpleEntry<Model, String>> positionsAfter;
     private AIDifficulty aiDifficulty;
 
