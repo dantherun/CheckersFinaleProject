@@ -1,14 +1,25 @@
-package org.example.checkersfinalproject;
+package Classes;
 
-import java.util.HashMap;
+import Enums.DirectionVector;
+import Enums.PieceType;
+
 import java.util.HashSet;
 import java.util.Set;
 
 public class Piece {
+    // The piece type of the piece
     protected PieceType pieceType;
+
+    // The piece type of the other kind (king or piece)
     protected PieceType differentPieceType;
+
+    // The directions the piece can move to eat
     protected Set<DirectionVector> directionsToMove = new HashSet<>();
+
+    // The piece type of the enemy pieces
     protected PieceType enemyPieces;
+
+    // The piece type of the enemy kings
     protected PieceType enemyKings;
 
     protected Piece(){}
@@ -56,6 +67,9 @@ public class Piece {
         return directionsToMove;
     }
 
+    /**
+     * Returns the row the piece needs to be in to be king
+     */
     public int rowToBeKing(){
         return pieceType == PieceType.WHITEPIECE ? 0 : 7;
     }

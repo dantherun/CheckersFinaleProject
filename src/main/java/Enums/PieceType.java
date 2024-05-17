@@ -1,4 +1,4 @@
-package org.example.checkersfinalproject;
+package Enums;
 
 public enum PieceType {
     REDPIECE(1),

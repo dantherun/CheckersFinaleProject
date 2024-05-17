@@ -1,4 +1,4 @@
-package org.example.checkersfinalproject;
+package Enums;
 
 public enum AIDifficulty {
     EASIEST, MEDIUM, HARDEST

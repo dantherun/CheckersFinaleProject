@@ -1,33 +1,39 @@
-package org.example.checkersfinalproject;
+package Classes;
 
 import javafx.scene.image.Image;
 import javafx.scene.image.ImageView;
 import javafx.scene.layout.StackPane;
 import javafx.scene.paint.Color;
-import javafx.scene.shape.Circle;
 import javafx.scene.shape.Ellipse;
+import Enums.PieceType;
+
 import java.io.FileInputStream;
 
 import java.io.FileNotFoundException;
 
-import static org.example.checkersfinalproject.CheckersBoard.TILE_SIZE;
+import static Classes.CheckersBoard.TILE_SIZE;
 public class ViewPiece extends StackPane {
+    // the image path
+    public static String imagePath = "src\\main\\java\\Images\\crown.png";
+
+    // the type of the piece
     private PieceType type;
+
+    // the color of the piece
     private String color;
+
+    // the ellipse of the piece
     private Ellipse ellipse;
-    private double mouseX, mouseY;
-    private double oldX, oldY;
+
+    // the type of the piece
     public PieceType getType() {
         return type;
     }
 
-    public double getOldY(){
-        return oldY;
-    }
-    public double getOldX(){
-        return oldX;
-    }
 
+    /**
+     * the constructor that creates a new piece with the given type, x, y and color
+      */
     public ViewPiece(PieceType type, int x, int y, String color){
         this.type = type;
         this.color = color;
@@ -57,26 +63,14 @@ public class ViewPiece extends StackPane {
             ellipse.setStrokeWidth(TILE_SIZE * 0.03);
             ellipse.setFill(Color.valueOf(color));
 
-//            if(type == PieceType.WHITEPIECE){
-//                ellipse.setFill(Color.valueOf("#fff9f4"));
-//                getChildren().addAll(bg, ellipse);
-//            }
-//
-//            else if(type == PieceType.REDPIECE){
-//                ellipse.setFill(Color.valueOf("#c40003"));
-//                getChildren().addAll(bg, ellipse);
-//            }
-
             ImageView imageView = null;
             if(type == PieceType.WHITEKING || type == PieceType.REDKING){
-                //ImageView imageView = createImageView("D:/YG/CheckersFinalProject-master/src/main/java/org/example/checkersfinalproject/crown.png", 50, 50);
-                imageView = createImageView("src\\main\\java\\org\\example\\checkersfinalproject\\crown.png", 50, 50);
+                imageView = createImageView(imagePath, 50, 50);
                 if(imageView != null){
                     imageView.setTranslateX((TILE_SIZE - TILE_SIZE * 0.3125 * 2) / 2);
                     imageView.setTranslateY((TILE_SIZE - TILE_SIZE * 0.3125 * 2) / 2);
                 }
 
-                //getChildren().addAll(bg, ellipse, imageView);
 
                 ellipse.setStroke(Color.GOLD);
                 bg.setFill(Color.GOLD);
@@ -86,29 +80,17 @@ public class ViewPiece extends StackPane {
             getChildren().addAll(bg, ellipse);
             if(imageView != null)
                 getChildren().addAll(imageView);
-           // }
-
-//            else{
-//                ellipse.setFill(Color.valueOf("#c40003"));
-//                ImageView imageView = createImageView("D:\\YG\\CheckersFinalProject-master\\src\\main\\java\\org\\example\\checkersfinalproject\\crown.png", 50, 50);
-//                imageView.setTranslateX((TILE_SIZE - TILE_SIZE * 0.3125 * 2) / 2);
-//                imageView.setTranslateY((TILE_SIZE - TILE_SIZE * 0.3125 * 2) / 2);
-//                getChildren().addAll(bg, ellipse, imageView);
-//            }
         }
 
-
-
-
-        setOnMousePressed(e -> {
-
-        });
-
-//        setOnMouseDragged(e -> {
-//            relocate(e.getSceneX() - mouseX + oldX, e.getSceneY() - mouseY + oldY);
-//        });
     }
 
+    /**
+     * This method is used to create an image view
+     * @param imagePath - the path of the image
+     * @param width - the width of the image
+     * @param height - the height of the image
+     * @return - the image view
+     */
     private ImageView createImageView(String imagePath, double width, double height) {
         ImageView imageView = null;
         try {
@@ -127,23 +109,23 @@ public class ViewPiece extends StackPane {
         return imageView;
     }
 
-    private int toBoard(double pixel){
-        return (int)(pixel + TILE_SIZE / 2) / TILE_SIZE;
-    }
-
+    /**
+     * This method is used to move the piece to the given x and y
+     * @param x - the x position
+     * @param y - the y position
+     */
     public void move(int x, int y){
-        oldX = x * TILE_SIZE;
-        oldY = y * TILE_SIZE;
+        int newX = x * TILE_SIZE;
+        int newY = y * TILE_SIZE;
 
-        relocate(oldX, oldY);
+        relocate(newX, newY);
     }
 
+    /**
+     * This method is used to change the color of the piece
+     * @param color - the color to change the piece to
+     */
     public void setColor(String color){
         ellipse.setFill(Color.valueOf(color));
-        //ellipse.setFill(Color.BLACK);
-    }
-
-    public void abortMove(){
-        relocate(oldX, oldY);
     }
 }

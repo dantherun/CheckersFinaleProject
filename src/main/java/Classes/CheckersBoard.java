@@ -1,4 +1,4 @@
-package org.example.checkersfinalproject;
+package Classes;
 
 import javafx.animation.KeyFrame;
 import javafx.animation.Timeline;
@@ -8,7 +8,6 @@ import javafx.scene.Group;
 import javafx.scene.Parent;
 import javafx.scene.Scene;
 import javafx.scene.control.*;
-import javafx.scene.input.KeyCode;
 import javafx.scene.layout.*;
 import javafx.scene.paint.Color;
 import javafx.scene.shape.Rectangle;
@@ -17,9 +16,9 @@ import javafx.scene.text.FontWeight;
 import javafx.scene.text.Text;
 import javafx.stage.Stage;
 import javafx.util.Duration;
+import Enums.PieceType;
 
 import java.io.IOException;
-import java.security.Key;
 import java.util.ArrayList;
 
 public class CheckersBoard extends Application {
@@ -38,7 +37,6 @@ public class CheckersBoard extends Application {
     private double mouseX;
     private double mouseY;
     private int[] cordinations;
-    private boolean takeInput;
     private View view;
     int secondsPassed = 0;
     Pane root;
@@ -54,9 +52,13 @@ public class CheckersBoard extends Application {
         textGroup = new Group();
         buttonGroup = new Group();
         cordinations = new int[2];
-        takeInput = false;
         timers = new Timeline[10];
     }
+
+    /**
+     * creates an empty board and initializes the data structures of the text and button
+     * @return Parent
+     */
     private Parent createContent(){
         Pane root = new Pane();
         root.setPrefSize(1100, 800);
@@ -77,6 +79,9 @@ public class CheckersBoard extends Application {
         return root;
     }
 
+    /**
+     * creates the board with the pieces
+     */
     public void createBoard(){
         tileGroup.getChildren().clear();
         int tileNumber = 1;
@@ -86,12 +91,9 @@ public class CheckersBoard extends Application {
                 tile.setOnMouseClicked(e -> {
                     mouseX = e.getSceneX();
                     mouseY = e.getSceneY();
-                    //System.out.println("x: " + toBoard(mouseX));
-                    //System.out.println("Y: " + toBoard(mouseY));
 
                     cordinations[0] = toBoard(mouseX);
                     cordinations[1] = toBoard(mouseY);
-                    takeInput = false;
                     view.takeInput(toBoard(mouseX), toBoard(mouseY));
                 });
                 board[y][x] = tile;
@@ -104,7 +106,6 @@ public class CheckersBoard extends Application {
                 tileNumberText.setX(x * TILE_SIZE + ((double) TILE_SIZE) / 2 - 20);
                 tileNumberText.setY(y * TILE_SIZE + ((double) TILE_SIZE) / 2 + 20);
 
-                //tileGroup.getChildren().add(tileNumberText);
                 tileNumber++;
             }
         }
@@ -112,104 +113,69 @@ public class CheckersBoard extends Application {
 
     }
 
-//    public Pane createTextBoard(){
-//        Pane root = new Pane();
-//        root.setPrefSize(100, 800);
-//        Button switchToScene1Button = new Button("Open Window 1");
-//        StackPane layout2 = new StackPane(switchToScene1Button);
-//        Scene scene2 = new Scene(layout2, 100, 800);
-//        root.getChildren().addAll(switchToScene1Button);
-//        return root;
-//    }
-    public void updatePieces(Tile[][] updatedBoard){
-        for (int y = 0; y < HEIGHT; y++) {
-            for (int x = 0; x < WIDTH; x++) {
-                if(updatedBoard[y][x].hasPiece()){
-                    if(board[y][x].hasPiece()){
-                        if(board[y][x].getPiece().getType() != updatedBoard[y][x].getPiece().getType()) {
-                            pieceGroup.getChildren().remove(board[y][x].getPiece());
-                            board[y][x].setPiece(makePiece(PieceType.REDPIECE, x, y));
-                            pieceGroup.getChildren().add(board[y][x].getPiece());
-                        }
-                    }
-
-                    else if(board[y][x].hasPiece()){
-                        pieceGroup.getChildren().remove(board[y][x].getPiece());
-                        board[y][x].setPiece(null);
-                    }
-                }
-            }
-        }
-    }
-
+    /**
+     * converts the pixel to coordinates
+     * @param pixel - the pixel to be converted
+     * @return int - the coordinate
+     */
     private int toBoard(double pixel){
         return (int)(pixel / TILE_SIZE);
     }
 
-    public void changePieceColor(PieceType type, int col, int row, String color){
+    /**
+     * changes the color of the piece
+     * @param col - the column of the piece
+     * @param row - the row of the piece
+     * @param color - the color to be changed to
+     */
+    public void changePieceColor(int col, int row, String color){
         board[col][row].getPiece().setColor(color);
     }
 
+    /**
+     * adds a piece to the board
+     * @param type - the type of the piece
+     * @param col - the column of the piece
+     * @param row - the row of the piece
+     */
     public void addPiece(PieceType type, int col, int row){
         ViewPiece viewPiece = makePiece(type, col, row);
         board[col][row].setPiece(viewPiece);
         pieceGroup.getChildren().add(viewPiece);
     }
 
+    /**
+     * removes all the pieces from the board
+     */
     public void removePieces(){
         createBoard();
         pieceGroup.getChildren().clear();
     }
 
-    private ViewPiece makePiece(PieceType type, int x, int y, String color){
-        ViewPiece viewPiece = new ViewPiece(type, x, y, color);
-        viewPiece.setOnMouseClicked(e -> {
-            mouseX = e.getSceneX();
-            mouseY = e.getSceneY();
-            //System.out.println("x: " + toBoard(mouseX));
-            //.out.println("Y: " + toBoard(mouseY));
-            cordinations[0] = toBoard(mouseX);
-            cordinations[1] = toBoard(mouseY);
-            takeInput = false;
-            view.takeInput(toBoard(mouseX), toBoard(mouseY));
-        });
-        return viewPiece;
-    }
+    /**
+     * creates a piece
+     * @param type - the type of the piece
+     * @param x - the x coordinate of the piece
+     * @param y - the y coordinate of the piece
+     * @return ViewPiece - the piece created
+     */
     private ViewPiece makePiece(PieceType type, int x, int y){
         ViewPiece viewPiece = new ViewPiece(type, x, y, (type == PieceType.WHITEPIECE || type == PieceType.WHITEKING) ? "#fff9f4" : "#c40003");
         viewPiece.setOnMouseClicked(e -> {
             mouseX = e.getSceneX();
             mouseY = e.getSceneY();
-            //System.out.println("x: " + toBoard(mouseX));
-            //.out.println("Y: " + toBoard(mouseY));
             cordinations[0] = toBoard(mouseX);
             cordinations[1] = toBoard(mouseY);
-            takeInput = false;
             view.takeInput(toBoard(mouseX), toBoard(mouseY));
         });
         return viewPiece;
     }
 
-    public int[] getInput(){
-        cordinations = new int[2];
-        takeInput = true;
-        return cordinations;
-    }
-
+    /**
+     * initializes the board and adds the key event listener to the scene
+     */
     public void initializeBoard(){
         Scene boardPane = new Scene(createContent());
-        //Pane textPane = createTextBoard();
-//        SplitPane splitPane = new SplitPane();
-//        splitPane.getItems().addAll(new StackPane(), new StackPane());
-//        splitPane.setDividerPositions(0.5f);
-
-        // Set Scenes to StackPanes within SplitPane
-        //((StackPane) splitPane.getItems().get(0)).getChildren().add(boradScene);
-//        ((StackPane) splitPane.getItems().get(0)).getChildren().add(boardPane);
-//        ((StackPane) splitPane.getItems().get(1)).getChildren().add(textPane);
-
-        //Scene scene = new Scene(boardPane);
-
 
         boardPane.setOnKeyPressed(event -> {
                 view.onKeyPressed(event.getCode().getName());
@@ -220,33 +186,27 @@ public class CheckersBoard extends Application {
         primaryStage.setScene(boardPane);
         primaryStage.show();
     }
-    public void start(Stage primaryStage) throws IOException {
-//        Scene scene = new Scene(createContent());
-//        primaryStage.setTitle("CheckersBoard");
-//        primaryStage.setScene(scene);
-//        primaryStage.show();
 
+    /**
+     * starts the whole application by creating the split pane and the view
+     * @param primaryStage - the stage to be updated
+     */
+    public void start(Stage primaryStage) {
         this.splitPane = new SplitPane();
         this.primaryStage = primaryStage;
         view = new View(this);
     }
 
 
-
+    /**
+     * creates a text message or overwrites an existing text message
+     * @param message - the message to be displayed
+     * @param x - the x coordinate of the message
+     * @param y - the y coordinate of the message
+     * @param bold - whether the text should be bold or not
+     * @param textId - the id of the text
+     */
     public void message(String message, int x, int y, boolean bold, int textId) {
-//        Text text = new Text("Right Border Text");
-//        text.setFont(Font.font("Arial", FontWeight.BOLD, 14));
-//        text.setFill(Color.WHITE);
-//        text.setX(810);
-//        text.setY(150);
-
-//        text = new Text(message);
-//        text.setFont(Font.font("Arial", FontWeight.BOLD, 40));
-//        text.setFill(Color.BLACK);
-//        text.setX(820);
-//        text.setY(100);
-//        textGroup.getChildren().add(text);
-
         text = new Text(message);
         text.setFont(Font.font("Arial", bold ? FontWeight.BOLD : FontWeight.NORMAL, 40));
         text.setFill(Color.BLACK);
@@ -263,40 +223,42 @@ public class CheckersBoard extends Application {
             texts.add(textId, text);
             textGroup.getChildren().add(text);
         }
-
-        //textGroup.getChildren().add(text);
     }
 
+    /**
+     * sets a timer with the given duration and the given seconds
+     * @param setSeconds - the seconds to be set
+     * @param duration - the duration of the timer
+     * @param timerId - the id of the timer
+     */
     public void setTimer(int setSeconds, int duration, int timerId){
         secondsPassed = setSeconds;
         Timeline timeline = new Timeline(new KeyFrame(Duration.seconds(1), event -> {
             secondsPassed++;
-            //System.out.println(setSeconds + ", " + duration);
             view.updateTimer(secondsPassed);
-//                message(secondsPassed);
-//                timerText.setText("Timer: " + secondsPassed + " seconds");
         }));
 
         timeline.setCycleCount(duration);
         timeline.play();
-
-//        if(timerId < timers.size())
-//            timers.set(timerId, timeline);
-//        else
-//            timers.add(timerId, timeline);
         timers[timerId] = timeline;
     }
 
+    /**
+     * stops the timer with the given id
+     * @param timerId - the id of the timer
+     */
     public void stopTimer(int timerId){
-//        if(timerId < timers.size())
         if(timers[timerId] != null)
             timers[timerId].stop();
     }
 
-//    public void message(String message, int x, int y, boolean bold, int timerId, boolean alert) {
-//
-//    }
-
+    /**
+     * asks a question with two answers
+     * @param message - the message to be displayed
+     * @param ans1 - the first answer
+     * @param ans2 - the second answer
+     * @param questionType - the type of the question
+     */
     public void askTwoAnswers(String message, String ans1, String ans2, String questionType){
         Stage secondaryStage = new Stage();
 
@@ -330,119 +292,19 @@ public class CheckersBoard extends Application {
         root.getChildren().addAll(questionText, buttonBox);
 
         Scene scene = new Scene(root, 1000, 700);
-//        scene.setOnKeyPressed(event -> {
-//            if(event.getCode() == KeyCode.RIGHT){
-//                view.onRightKeyPressed();
-//            }
-//
-//            else if(event.getCode() == KeyCode.LEFT){
-//                view.onLeftKeyPressed();
-//            }
-//        });
 
         secondaryStage.setScene(scene);
         secondaryStage.setTitle("Checkers");
         secondaryStage.show();
-
-        //
-
-        // Creating a new stage for the second window
-
-    }
-    public void alertMessage(String message) {
-        Text questionText = new Text(message);
-
-        questionText.setFont(new Font(40));
-
-        VBox root = new VBox(10);
-        root.setSpacing(40);
-        root.setAlignment(Pos.CENTER);
-        root.getChildren().addAll(questionText);
-
-        Scene scene = new Scene(root, 1100, 800);
-//        scene.setOnKeyPressed(event -> {
-//            if(event.getCode() == KeyCode.RIGHT){
-//                view.onRightKeyPressed();
-//            }
-//
-//            else if(event.getCode() == KeyCode.LEFT){
-//                view.onLeftKeyPressed();
-//            }
-//        });
-
-        primaryStage.setScene(scene);
-        primaryStage.show();
-    }
-    public void alertAskTwoAnswers(String message, String ans1, String ans2, String questionType) {
-        Stage secondaryStage = new Stage();
-
-        Text questionText = new Text(message);
-
-        questionText.setFont(new Font(40));
-        Button button1 = new Button(ans1);
-        Button button2 = new Button(ans2);
-
-        button1.setFont(new Font(40));
-        button2.setFont(new Font(40));
-        button1.setOnAction(event -> {
-            view.buttonPushed(message, ans1, questionType);
-            secondaryStage.close();
-        });
-
-        button2.setOnAction(event -> {
-            view.buttonPushed(message, ans2, questionType);
-            secondaryStage.close();
-            primaryStage.close();
-        });
-
-        HBox buttonBox = new HBox(10);
-        buttonBox.setAlignment(Pos.CENTER);
-        buttonBox.getChildren().addAll(button1, button2);
-
-        VBox root = new VBox(10);
-        root.setSpacing(40);
-        root.setAlignment(Pos.CENTER);
-        root.getChildren().addAll(questionText, buttonBox);
-
-        Scene scene = new Scene(root, 1100, 800);
-
-        scene.setOnKeyPressed(event -> {
-//            if(event.getCode() == KeyCode.RIGHT){
-//                view.onRightKeyPressed();
-//            }
-//
-//            else if(event.getCode() == KeyCode.LEFT){
-//                view.onLeftKeyPressed();
-//            }
-        });
-
-//        primaryStage.setScene(scene);
-//        primaryStage.setTitle("Start Game");
-//        primaryStage.show();
-
-        // Creating a new stage for the second window
-        secondaryStage.setScene(scene);
-        secondaryStage.setTitle("game");
-        secondaryStage.show();
-//        Button showAlertButton = new Button(ans1);
-//        showAlertButton.setOnAction(e -> view.buttonPushed(message, ans1, questionType));
-//
-//        StackPane root = new StackPane();
-//        root.getChildren().add(showAlertButton);
-//
-//        Scene scene = new Scene(root, 300, 250);
-//
-//        primaryStage.setTitle("Alert Dialog Example");
-//        primaryStage.setScene(scene);
-//        primaryStage.show();
-//        Alert alert = new Alert(Alert.AlertType.INFORMATION);
-//        alert.setTitle("alert");
-//        alert.setHeaderText(message);
-//        //alert.setContentText("Hello! This is a simple alert dialog example.");
-//
-//        alert.showAndWait();
     }
 
+    /**
+     * adds a button to the board
+     * @param message - the message to be displayed on the button
+     * @param x - the x coordinate of the button
+     * @param y - the y coordinate of the button
+     * @param buttonId - the id of the button
+     */
     public void addButton(String message, int x, int y, int buttonId){
         Button button = new Button(message);
 
@@ -472,6 +334,10 @@ public class CheckersBoard extends Application {
 
     }
 
+    /**
+     * removes the button with the given id
+     * @param buttonId - the id of the button
+     */
     public void removeButton(int buttonId){
         Button button = buttons[buttonId];
         if(button != null)
@@ -479,14 +345,29 @@ public class CheckersBoard extends Application {
         buttons[buttonId] = null;
     }
 
+    /**
+     * quits the application
+     */
     public void quit(){
         primaryStage.close();
     }
 
+    /**
+     * the main method that launches the application
+     * @param args - the arguments to be passed
+     */
     public static void main(String[] args) {
         launch();
     }
 
+    /**
+     * asks a question with three answers
+     * @param message - the message to be displayed
+     * @param ans1 - the first answer
+     * @param ans2 - the second answer
+     * @param ans3 - the third answer
+     * @param questionType - the type of the question
+     */
     public void askThreeAnswers(String message, String ans1, String ans2, String ans3, String questionType) {
         Stage secondaryStage = new Stage();
 
@@ -526,20 +407,9 @@ public class CheckersBoard extends Application {
         root.getChildren().addAll(questionText, buttonBox);
 
         Scene scene = new Scene(root, 1000, 700);
-//        scene.setOnKeyPressed(event -> {
-//            if(event.getCode() == KeyCode.RIGHT){
-//                view.onRightKeyPressed();
-//            }
-//
-//            else if(event.getCode() == KeyCode.LEFT){
-//                view.onLeftKeyPressed();
-//            }
-//        });
 
         secondaryStage.setScene(scene);
         secondaryStage.setTitle("Checkers");
         secondaryStage.show();
-
-
     }
 }

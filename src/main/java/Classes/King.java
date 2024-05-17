@@ -1,7 +1,7 @@
-package org.example.checkersfinalproject;
+package Classes;
 
-import java.util.HashSet;
-import java.util.Set;
+import Enums.DirectionVector;
+import Enums.PieceType;
 
 public class King extends Piece{
     public King(PieceType pieceType){

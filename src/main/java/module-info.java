@@ -13,5 +13,10 @@ module org.example.checkersfinalproject {
    // requires jfxrt;
 
     opens org.example.checkersfinalproject to javafx.fxml;
-    exports org.example.checkersfinalproject;
+    exports Classes;
+    opens Classes to javafx.fxml;
+    exports Enums;
+    opens Enums to javafx.fxml;
+    exports Interface;
+    opens Interface to javafx.fxml;
 }
