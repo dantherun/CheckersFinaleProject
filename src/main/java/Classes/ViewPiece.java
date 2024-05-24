@@ -25,12 +25,13 @@ public class ViewPiece extends StackPane {
     // the ellipse of the piece
     private Ellipse ellipse;
 
+    // checks if the mouse is on the piece
+    private boolean isMouseOnPiece;
+
     // the type of the piece
     public PieceType getType() {
         return type;
     }
-
-
     /**
      * the constructor that creates a new piece with the given type, x, y and color
       */
@@ -39,7 +40,7 @@ public class ViewPiece extends StackPane {
         this.color = color;
         move(x, y);
 
-
+        isMouseOnPiece = false;
         ellipse = new Ellipse(TILE_SIZE * 0.3125, TILE_SIZE * 0.26);
 
         ellipse.setTranslateX((TILE_SIZE - TILE_SIZE * 0.3125 * 2) / 2);
@@ -51,7 +52,6 @@ public class ViewPiece extends StackPane {
         }
 
         else{
-
             Ellipse bg = new Ellipse(TILE_SIZE * 0.3125, TILE_SIZE * 0.26);
             bg.setTranslateX((TILE_SIZE - TILE_SIZE * 0.3125 * 2) / 2);
             bg.setTranslateY((TILE_SIZE - TILE_SIZE * 0.26 * 2) / 2 + TILE_SIZE * 0.07);
@@ -80,6 +80,21 @@ public class ViewPiece extends StackPane {
             getChildren().addAll(bg, ellipse);
             if(imageView != null)
                 getChildren().addAll(imageView);
+
+            setOnMouseEntered(e -> {
+                if(ellipse.getFill().equals(Color.valueOf(color))){
+                    isMouseOnPiece = true;
+                    ellipse.setFill(Color.valueOf(color).darker());
+                }
+
+            });
+
+            setOnMouseExited(e -> {
+                if(isMouseOnPiece){
+                    isMouseOnPiece = false;
+                    ellipse.setFill(Color.valueOf(color));
+                }
+            });
         }
 
     }

@@ -26,7 +26,6 @@ public class CheckersBoard extends Application {
     public static final int WIDTH = 8;
     public static final int HEIGHT = 8;
     private Stage primaryStage;
-    private SplitPane splitPane;
     private Tile[][] board;
     private ArrayList<Text> texts;
     private Button[] buttons;
@@ -192,7 +191,6 @@ public class CheckersBoard extends Application {
      * @param primaryStage - the stage to be updated
      */
     public void start(Stage primaryStage) {
-        this.splitPane = new SplitPane();
         this.primaryStage = primaryStage;
         view = new View(this);
     }
