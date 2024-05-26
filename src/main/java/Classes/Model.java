@@ -5,6 +5,7 @@ import Enums.DirectionVector;
 import Enums.PieceType;
 
 import java.util.HashMap;
+import java.util.Set;
 
 public class Model {
     // the bitboard
@@ -13,7 +14,7 @@ public class Model {
     // A list of moves that have information about the move.
     // Information like the number of jumps, if the piece became a king,
     // and if it was an eating move or not
-    private HashMap<String, String> moves;
+    private HashMap<String, Move> moves;
 
     // last piece that the model checked
     private int[] pieceToMove;
@@ -175,8 +176,12 @@ public class Model {
      * @param col the column to move to
      * @param move the move to make
      */
-    public void makeMove(Piece piece, int row, int col, HashMap<String, String> move){
-        makeMove(piece, pieceToMove[0], pieceToMove[1], row, col, move.get(row + "," + col).split(",")[1].equals("true"));
+    public void makeMove(Piece piece, int row, int col, HashMap<String, Move> move){
+        makeMove(piece, pieceToMove[0], pieceToMove[1], row, col, move.get(row + "," + col).becomesAKing());
+    }
+
+    public void makeMove(Piece piece, int row0, int col0, int row, int col, Move move){
+        makeMove(piece, row0, col0, row, col, move.becomesAKing());
     }
 
     /**
@@ -227,7 +232,8 @@ public class Model {
                 totalJumpValue += jumpValue;
                 // add the move to the moves
                 move = (row + tempMove[0] * 2) + "," + (col + tempMove[1] * 2);
-                moves.put(move, totalJumpValue + "," + (becomesKing || alreadyBecameKing) + "," + true);
+                moves.put(move, new Move(totalJumpValue, becomesKing || alreadyBecameKing, true));
+                //moves.put(move, totalJumpValue + "," + (becomesKing || alreadyBecameKing) + "," + true);
 
                 // add the move to the eating path pointer
                 eatingPathPointer.put((row + tempMove[0] * 2) + "," + (col + tempMove[1] * 2), new long[]{piecesToEat, kingsToEat});
@@ -267,7 +273,8 @@ public class Model {
 
                 // add the move to the moves
                 move = (row + tempMove[0]) + "," + (col + tempMove[1]);
-                moves.put(move, 0 + "," + becomesKing + "," + false);
+                moves.put(move, new Move(0, becomesKing, false));
+                //moves.put(move, 0 + "," + becomesKing + "," + false);
             }
         }
     }
@@ -310,7 +317,7 @@ public class Model {
      * @param clear - if the moves should be cleared first
      * @return the moves
      */
-    public HashMap<String, String> getAllMoves(Piece piece, int row, int col, boolean hasToEat, boolean clear){
+    public HashMap<String, Move> getAllMoves(Piece piece, int row, int col, boolean hasToEat, boolean clear){
         if(clear){
             moves.clear();
             eatingPathPointer.clear();
@@ -337,7 +344,6 @@ public class Model {
         enemyKingType = piece.enemyKings;
 
 
-        //PieceType enemyPieceType = piece == PieceType.WHITEPIECE ? PieceType.REDPIECE : PieceType.WHITEPIECE;
         long enemyPieces = bitBoard.getPieces(enemyPieceType);
         long enemyKings = bitBoard.getPieces(enemyKingType);
 
@@ -360,8 +366,6 @@ public class Model {
             if(!moves.isEmpty())
                 return false;
         }
-
-        //players.setPieces(enemyPieceType, enemyPieces);
 
         return true;
     }

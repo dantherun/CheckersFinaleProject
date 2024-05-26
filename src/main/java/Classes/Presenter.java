@@ -42,7 +42,7 @@ public class Presenter {
     private Piece lastChosenPiece;
 
     // the moves that the player can make
-    private HashMap<String, String> moves;
+    private HashMap<String, Move> moves;
 
     // the game mode of the game (player vs player or player vs AI)
     private GameMode gameMode;
@@ -256,6 +256,15 @@ public class Presenter {
         // getting all the moves that the pieces of the AI can make
         moves = model.getAllMoves(lastChosenPiece, aiFromCord[0], aiFromCord[1], hasToEat, true);
 
+        // remove all the shadows
+        model.removeAllPieces(PieceType.SHADOW);
+
+        // show the shadow that will show the end of the AI move
+        model.addPiece(PieceType.SHADOW, aiToCord[0], aiToCord[1]);
+
+        // adding the current position to the stack including the shadows
+        positionsBefore.add(new SimpleEntry<>(model.clone(), aiFromCord[0] + "," + aiFromCord[1] + ":" + player));
+
         // making the move with the chosen piece
         model.makeMove(lastChosenPiece, aiToCord[0], aiToCord[1], moves);
 
@@ -413,14 +422,13 @@ public class Presenter {
 
                 // take the player playing now
                 playerTurn = player;
-
             }
 
             playerPieceType = playerTurn % 2 == 0 ? new Piece(PieceType.WHITEPIECE) : new Piece(PieceType.REDPIECE);
             playerKingType = new King(playerPieceType.getDifferentType());
 
             // check if the AI has to eat
-            hasToEat = modelToDo.needToEat(playerPieceType);
+            boolean aiHasToEat = modelToDo.needToEat(playerPieceType);
 
             // get the AI move
             aiMove = modelToDo.getAIMove(playerPieceType, AIDifficulty.HARDEST);
@@ -444,7 +452,7 @@ public class Presenter {
             modelToDo.removeAllPieces(PieceType.SHADOW);
 
             // get all the moves that the AI can make so that the player can later choose to take the AI move or not
-            moves = modelToDo.getAllMoves(lastChosenPiece, aiFromCord[0], aiFromCord[1], hasToEat, true);
+            moves = modelToDo.getAllMoves(lastChosenPiece, aiFromCord[0], aiFromCord[1], aiHasToEat, true);
 
             // show the shadow that will show the end of the AI move
             modelToDo.addPiece(PieceType.SHADOW, aiToCord[0], aiToCord[1]);

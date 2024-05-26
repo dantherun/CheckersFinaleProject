@@ -30,6 +30,15 @@ public class Move {
         this.piece = PieceType.None;
     }
 
+    public Move(int evaluation, boolean becomesAKing, boolean willEat){
+        this.evaluation = evaluation;
+        this.pieceFromCord = null;
+        this.pieceToCord = null;
+        this.becomesAKing = becomesAKing;
+        this.piece = PieceType.None;
+        this.willEat = willEat;
+    }
+
     public Move(float evaluation, int[] pieceFromCord, int[] pieceToCord, boolean becomesAKing, PieceType piece, boolean willEat){
         this.evaluation = evaluation;
         this.pieceFromCord = pieceFromCord;

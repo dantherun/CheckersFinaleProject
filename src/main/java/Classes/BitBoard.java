@@ -3,6 +3,8 @@ package Classes;
 import Enums.DirectionVector;
 import Enums.PieceType;
 
+import java.util.Objects;
+
 public class BitBoard {
     private long whitePieces;
     private long redPieces;

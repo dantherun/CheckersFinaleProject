@@ -124,7 +124,8 @@ public class AI {
                 openingStage = false;
         }
 
-        Move move = takeMove(pieceType, model, false, new HashMap<>(), level);
+        Set<Move> moves = new HashSet<>();
+        Move move = takeMove(pieceType, model, false, new HashMap<>(), level, moves);
 
         // --------------------------------- this part for debugging
         System.out.println(numberOfRecursion);
@@ -145,7 +146,7 @@ public class AI {
      * @param level the difficulty level of the AI
      * @return the best move that the AI can do
      */
-    private Move takeMove(Piece pieceType, Model model, boolean isResponse, HashMap<String, Object> viewedPositions, AIDifficulty level){
+    private Move takeMove(Piece pieceType, Model model, boolean isResponse, HashMap<String, Object> viewedPositions, AIDifficulty level, Set<Move> movesus){
         boolean hasToEat;
         Model newModel = model.clone(); // makes new model so that it does not change the original model
         Set<Move> moves; // will have the possible moves for all the pieces of that pieceType
@@ -157,7 +158,7 @@ public class AI {
         for (Move move : moves){
             Piece newPiece;
 
-            // checks if the piece  isa king
+            // checks if the piece is a king
             if(move.getPiece() == PieceType.WHITEKING || move.getPiece() == PieceType.REDKING)
                 newPiece = new King(move.getPiece()); // if it is a king, then it will be a king
             else
@@ -166,10 +167,10 @@ public class AI {
             Model evalModel = newModel.clone(); // makes a new model so that it does not change the model
 
             // for every piece that can move it takes all the possible moves into a HashMap
-            HashMap<String, String> allMoves = evalModel.getAllMoves(newPiece, move.getPieceFromCord()[0], move.getPieceFromCord()[1], hasToEat, true);
+            //HashMap<String, String> allMoves = evalModel.getAllMoves(newPiece, move.getPieceFromCord()[0], move.getPieceFromCord()[1], hasToEat, true);
 
             // makes the move
-            evalModel.makeMove(newPiece, move.getPieceToCord()[0], move.getPieceToCord()[1], allMoves);
+            evalModel.makeMove(newPiece, move.getPieceFromCord()[0], move.getPieceFromCord()[1], move.getPieceToCord()[0], move.getPieceToCord()[1], move);
 
             // checks if the position is already viewed
             if(!viewedPositions.containsKey(evalModel.getBitBoard().getPieces(PieceType.WHITEPIECE) + "," +
@@ -197,6 +198,8 @@ public class AI {
 
         numberOfRecursion++;
 
+        if(movesus != null)
+            movesus.addAll(moves);
         // returns the best move
         return bestMove;
     }
@@ -212,6 +215,7 @@ public class AI {
      */
     private void evaluate(Piece pieceType, Move move, Model model, boolean isResponse, HashMap<String, Object> viewedPositions, AIDifficulty level){
         boolean enemyCanEat = false;
+        boolean enemyCanBecomeKing = false;
         model.getEatingPathPointer().clear();
 
         // checks if the move ends the game
@@ -246,41 +250,40 @@ public class AI {
         }
 
         // checks if the piece will not move toward the left and right edges (to control more of the center)
-        if(move.getPieceToCord()[1] == 0 || move.getPieceToCord()[1] == 7)
+        if((move.getPieceToCord()[1] == 0 || move.getPieceToCord()[1] == 7) && !move.willEat())
             // if the piece will move toward the left or right edges, then it will subtract 0.5 from the evaluation
             move.subtractEvaluation(0.5F);
 
         switch (pieceType.getPieceType()){
             case PieceType.WHITEPIECE:
-
                 // checks if the piece is essential (if on the first row of the player)
-                if((move.getPieceFromCord()[0] == 7) && (move.getPieceFromCord()[1] == 2 || move.getPieceFromCord()[1] == 6))
+                if((move.getPieceFromCord()[0] == 7) && (move.getPieceFromCord()[1] == 2 || move.getPieceFromCord()[1] == 6) && !move.willEat())
                     // if the piece is essential, then it will subtract 1.5 from the evaluation
                     move.subtractEvaluation(1.5F);
 
                 // if the enemy cannot eat and the move does not make the piece a king and the piece will not eat
                 if(!enemyCanEat && !move.becomesAKing() && !move.willEat())
                     // then it will add 1 to the evaluation
-                    move.addEvaluation(1);
+                    move.addEvaluation(1F);
                 break;
 
             case PieceType.REDPIECE:
                 // checks if the piece is essential (if on the first row of the player)
-                if((move.getPieceFromCord()[0] == 0) && (move.getPieceFromCord()[1] == 1 || move.getPieceFromCord()[1] == 5))
+                if((move.getPieceFromCord()[0] == 0) && (move.getPieceFromCord()[1] == 1 || move.getPieceFromCord()[1] == 5) && !move.willEat())
                     // if the piece is essential, then it will subtract 1.5 from the evaluation
                     move.subtractEvaluation(1.5F);
 
                 // if the enemy cannot eat and the move does not make the piece a king and the piece will not eat
                 if(!enemyCanEat && !move.becomesAKing() && !move.willEat())
                     // then it will add 1 to the evaluation
-                    move.addEvaluation(1);
+                    move.addEvaluation(1F);
                 break;
         }
 
         // checks counter-attack and setting a trap (only if not the easiest level)
         if((level == AIDifficulty.HARDEST && (enemyCanEat || !isResponse)) || (level == AIDifficulty.MEDIUM && enemyCanEat)){
             // receives the best move of the enemy
-            Move enemyBestMove = takeMove(new Piece(pieceType.getEnemyPieceType()), model.clone(), true, viewedPositions, level);
+            Move enemyBestMove = takeMove(new Piece(pieceType.getEnemyPieceType()), model.clone(), true, viewedPositions, level, null);
             // subtracts the evaluation of the enemy's best move from the evaluation of the current move
             move.subtractEvaluation(enemyBestMove.getEvaluation());
         }
@@ -296,10 +299,10 @@ public class AI {
     private Set<Move> getMoves(Piece pieceType, Model model){
         BitBoard board = model.getBitBoard();
         boolean hasToEat;
-        int evaluation;
+        float evaluation;
         Model newModel = model.clone();
         Set<Move> moves = new HashSet<>();
-        HashMap<String, String> possibleMoves;
+        HashMap<String, Move> possibleMoves;
         hasToEat = newModel.needToEat(pieceType);
         Piece kingType = new King(pieceType.getDifferentType());
         long pieces = board.getPieces(pieceType.getPieceType());
@@ -309,10 +312,10 @@ public class AI {
         // iterates over all the pieces and adds all the possible moves to the moves set
         while ((leftestPiece = board.getFirstPiece(pieces))[0] != -1) {
             if (!(possibleMoves = newModel.getAllMoves(pieceType, leftestPiece[0], leftestPiece[1], hasToEat, true)).isEmpty()) {
-                for (Map.Entry<String, String> move : possibleMoves.entrySet()) {
-                    evaluation = Integer.parseInt(move.getValue().split(",")[0]);
+                for (Map.Entry<String, Move> move : possibleMoves.entrySet()) {
+                    evaluation = move.getValue().getEvaluation();
                     int[] pieceToCord = new int[]{Integer.parseInt(move.getKey().split(",")[0]), Integer.parseInt(move.getKey().split(",")[1])};
-                    moves.add(new Move(evaluation, leftestPiece, pieceToCord, Boolean.parseBoolean(move.getValue().split(",")[1]), pieceType.getPieceType(), Boolean.parseBoolean(move.getValue().split(",")[2])));
+                    moves.add(new Move(evaluation, leftestPiece, pieceToCord, move.getValue().becomesAKing(), pieceType.getPieceType(), move.getValue().willEat()));
                 }
             }
 
@@ -322,10 +325,10 @@ public class AI {
         // iterates over all the kings and adds all the possible moves to the moves set
         while ((leftestPiece = board.getFirstPiece(kings))[0] != -1) {
             if (!(possibleMoves = newModel.getAllMoves(kingType, leftestPiece[0], leftestPiece[1], hasToEat, true)).isEmpty()) {
-                for (Map.Entry<String, String> move : possibleMoves.entrySet()) {
-                    evaluation = Integer.parseInt(move.getValue().split(",")[0]);
+                for (Map.Entry<String, Move> move : possibleMoves.entrySet()) {
+                    evaluation = move.getValue().getEvaluation();
                     int[] pieceToCord = new int[]{Integer.parseInt(move.getKey().split(",")[0]), Integer.parseInt(move.getKey().split(",")[1])};
-                    moves.add(new Move(evaluation, leftestPiece, pieceToCord, Boolean.parseBoolean(move.getValue().split(",")[1]), kingType.getPieceType(), Boolean.parseBoolean(move.getValue().split(",")[2])));
+                    moves.add(new Move(evaluation, leftestPiece, pieceToCord, move.getValue().becomesAKing(), kingType.getPieceType(), move.getValue().willEat()));
                 }
             }
             //players.removeFirstPiece(piece);
